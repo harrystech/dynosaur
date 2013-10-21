@@ -23,7 +23,7 @@ describe "scaler" do
             estimated = AnalyticsDynoScaler.current_estimate
             current = AnalyticsDynoScaler.current
             puts "#{i*0.11}s: Estimated = #{estimated}; Current = #{current}"
-            estimated.should eql current
+            (current >= estimated).should be_true
         }
         puts "Stopping autoscaler"
         AnalyticsDynoScaler.stop_autoscaler
@@ -39,6 +39,7 @@ describe "scaler" do
         AnalyticsDynoScaler.initialize(config)
 
 
+        now = Time.now
         # Check that it picks the max of all plugins
         AnalyticsDynoScaler.plugins[0].stub(:retrieve) { 10 }
         AnalyticsDynoScaler.plugins[1].stub(:retrieve) { 33 }
@@ -47,6 +48,7 @@ describe "scaler" do
         combined.should eql 17  # 33 / 2 rounded up
 
 
+        Time.stub(:now) { now + 61 } # avoid blackout issues
         # Check that we are constrained by max_web_dynos
         AnalyticsDynoScaler.plugins[0].stub(:retrieve) { config["scaler"]["max_web_dynos"]*4 }
         AnalyticsDynoScaler.plugins[1].stub(:retrieve) { 27 }
@@ -55,11 +57,38 @@ describe "scaler" do
         combined.should eql config["scaler"]["max_web_dynos"]
 
 
+        Time.stub(:now) { now + 300 } # avoid blackout issues
         # Check that we are constrained by min_web_dynos
         AnalyticsDynoScaler.plugins[0].stub(:retrieve) { 0 }
         AnalyticsDynoScaler.plugins[1].stub(:retrieve) { 1 }
         combined, details = AnalyticsDynoScaler.get_combined_estimate
         puts "#{combined} - #{details}"
         combined.should eql config["scaler"]["min_web_dynos"]
+    end
+
+    it "should obey the blackout period" do
+        config = get_config_with_test_plugin(1)
+
+        config["plugins"][0]["interval"] = 0
+        AnalyticsDynoScaler.initialize(config)
+        AnalyticsDynoScaler.plugins[0].stub(:retrieve) { 10 }
+        combined, details = AnalyticsDynoScaler.get_combined_estimate
+
+        now = Time.now
+        desired = AnalyticsDynoScaler.get_desired_state(10, 12, now)
+        desired.should eql 12
+        AnalyticsDynoScaler.instance_variable_set(:@last_change_ts, now)
+
+        time = now + 1
+        desired = AnalyticsDynoScaler.get_desired_state(12, 11, time)
+        desired.should eql 12
+
+        time = now + 61
+        desired = AnalyticsDynoScaler.get_desired_state(12, 11, time)
+        desired.should eql 11
+
+        time = now + 61
+        desired = AnalyticsDynoScaler.get_desired_state(13, 13, time)
+        desired.should eql 13
     end
 end

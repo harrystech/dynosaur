@@ -26,7 +26,9 @@ def get_config_with_test_plugin(num_plugins=1)
             "heroku_api_key" => api_key,
             "heroku_app_name" => app_name,
             "dry_run" => true,
-            "interval" => 0.1
+            "interval" => 0.1,
+            "blackout" => 10
+
         }
     }
     plugins = []
@@ -35,7 +37,6 @@ def get_config_with_test_plugin(num_plugins=1)
                 "name" => "random_#{i}",
                 "type" => "RandomPlugin",
                 "seed" => 1234,
-                "unit" => "randoms"
         }
     }
     config["plugins"] = plugins

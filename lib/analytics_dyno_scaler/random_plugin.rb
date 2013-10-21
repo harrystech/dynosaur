@@ -3,8 +3,6 @@
 # Just returns random values and (value / 2) estimated dynos
 
 class RandomPlugin < ScalerPlugin
-    @seed = nil
-
     attr_reader :seed
 
     # Load config from the config json object
@@ -12,6 +10,7 @@ class RandomPlugin < ScalerPlugin
         super
         # stupid, kinda, but wanted to test plugin-specific options
         @seed = config["seed"] # not even using it really
+        @unit = "randoms"
     end
 
     def retrieve

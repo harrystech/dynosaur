@@ -22,7 +22,7 @@ describe "Loading plugins" do
         AnalyticsDynoScaler.initialize(config)
         plugins = AnalyticsDynoScaler.plugins
         plugins.length.should eql 1
-        plugins[0].unit.should eql config["plugins"][0]["unit"]
+        plugins[0].unit.should eql "randoms"
         plugins[0].seed.should eql config["plugins"][0]["seed"]
     end
 

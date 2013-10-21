@@ -1,5 +1,4 @@
 
-require 'analytics_dyno_scaler/heroku_manager'
 
 describe "HerokuManager" do
     before do

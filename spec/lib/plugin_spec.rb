@@ -48,7 +48,7 @@ describe "Plugins" do
         val = rand.get_value()
         dynos = rand.estimated_dynos
         rand.retrievals.should eql 1  # make sure the value hasn't changed
-        dynos.should eql val / 2
+        dynos.should eql (val / 2.0).ceil
 
     end
 end

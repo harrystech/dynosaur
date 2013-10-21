@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+
+$LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+require "analytics_dyno_scaler"
+require 'yaml'
+require 'pry'
+
+def load_config
+    if ARGV.length != 1
+        puts "Usage: #{$0} config.yaml"
+        exit 2
+    end
+    config = YAML.load_file(ARGV[0])
+    return config
+end
+
+
+config = load_config
+
+
+AnalyticsDynoScaler.initialize(config)
+
+
+AnalyticsDynoScaler.start_autoscaler
+

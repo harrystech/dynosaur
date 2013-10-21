@@ -5,7 +5,8 @@ module AnalyticsDynoScaler
     class << self
         DEFAULT_MIN_WEB_DYNOS = 2
         DEFAULT_MAX_WEB_DYNOS = 100
-        DEFAULT_SCALER_INTERVAL = 5   # seconds between wakeups
+        DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
+        DEFAULT_DOWNSCALE_BLACKOUT = 300 # seconds to wait after change before dropping
 
         attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current
 
@@ -17,6 +18,8 @@ module AnalyticsDynoScaler
             @stopped = false
             @current_estimate = 0
             @current = 0
+            @desired_state
+            @last_change_ts = nil
         end
 
 
@@ -30,17 +33,25 @@ module AnalyticsDynoScaler
                 end
                 now = Time.now
 
-                previous = @heroku_manager.get_current_dynos
+                before = @heroku_manager.get_current_dynos
                 @current_estimate, details = get_combined_estimate
+                @desired_state = get_desired_state(before, @current_estimate, now)
 
-                @heroku_manager.ensure(@current_estimate)
-                @current = @heroku_manager.get_current_dynos
-
-                if previous != @current
-                    puts "CHANGE: #{previous} => #{@current}"
+                if @desired_state != before
+                    @heroku_manager.ensure(@desired_state)
                 end
-                puts "#{now} [#{@current} / #{@current_estimate}] - #{details}"
+                after = @heroku_manager.get_current_dynos
+
+                if before != after
+                    puts "CHANGE: #{before} => #{after}"
+                    @last_change_ts = Time.now
+                end
+                @current = after
+                puts "#{now} [#{before}=>#{after} (#{@current_estimate})] - #{details}"
                 sleep @interval
+                if @stats
+                    output_stats(now, @current_estimate, @desired_state, before, after)
+                end
             end
         end
 
@@ -76,10 +87,27 @@ module AnalyticsDynoScaler
             return combined_estimate, status
         end
 
+        # Give the current desired state, taking into account hysteresis i.e. blackout period
+        # where we do not drop down for x seconds after any change up OR down.
+        def get_desired_state(current, estimate, now)
+            if estimate >= current
+                return estimate  # always scale up quickly
+            end
+
+            if @last_change_ts.nil? || @last_change_ts + @blackout < now
+                return current - 1
+            end
+
+            puts "In blackout, not dropping again until #{@last_change_ts + @blackout}"
+            return current
+        end
+
         private
         def load_plugins
             # Load plugins (see glob on next line)
-            Gem.find_files('analytics_dyno_scaler/*_plugin.rb').each { |path|
+            load_path = File.join(File.dirname(__FILE__), "analytics_dyno_scaler", "*_plugin.rb")
+            puts "Loading plugins from #{load_path}"
+            Gem.find_files(load_path).each { |path|
                 if path.split("/")[-1] == "scaler_plugin.rb"
                     next
                 end
@@ -96,7 +124,9 @@ module AnalyticsDynoScaler
             @min_web_dynos = scaler_config.has_key?("min_web_dynos") ? scaler_config["min_web_dynos"] : DEFAULT_MIN_WEB_DYNOS
             @max_web_dynos = scaler_config.has_key?("max_web_dynos") ? scaler_config["max_web_dynos"] : DEFAULT_MAX_WEB_DYNOS
             @dry_run = scaler_config.has_key?("dry_run") ? scaler_config["dry_run"] : false
+            @stats = scaler_config.has_key?("stats") ? scaler_config["stats"] : false
             @interval = scaler_config.has_key?("interval") ? scaler_config["interval"] : DEFAULT_SCALER_INTERVAL
+            @blackout = scaler_config.has_key?("blackout") ? scaler_config["blackout"] : DEFAULT_DOWNSCALE_BLACKOUT
 
             if scaler_config["heroku_api_key"].nil? || scaler_config["heroku_app_name"].nil?
                 raise "You must specify your heroku API key and app name in the scaler section of config"
@@ -114,10 +144,9 @@ module AnalyticsDynoScaler
             @plugins = []
             plugin_config.each { |config|
                 plugin = nil
-                puts "Configuring plugin #{config["name"]}"
                 subclasses.each { |klass|
                     if klass.name == config["type"]
-                        puts "Instantiating #{klass.name} for config #{config["name"]}"
+                        puts "Instantiating #{klass.name} for config '#{config["name"]}'"
                         plugin = klass.new(config)
                         break
                     end
@@ -129,6 +158,12 @@ module AnalyticsDynoScaler
                 @plugins << plugin
             }
             return @plugins
+        end
+
+        def output_stats(now, combined_estimate, desired_state, before, after)
+            open('stats.txt', 'a') { |f|
+                f.puts "#{now},#{now.to_i},#{combined_estimate},#{desired_state},#{before},#{after}"
+            }
         end
 
 

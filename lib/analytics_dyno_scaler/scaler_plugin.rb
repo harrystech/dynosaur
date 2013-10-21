@@ -14,10 +14,7 @@ class ScalerPlugin
         if @name.nil?
             raise "You must specify a name"
         end
-        @unit = config["unit"]
-        if @unit.nil?
-            raise "You must specify unit"
-        end
+        @unit = ""
         @value = nil
         @interval = config.has_key?("interval") ? config["interval"] : DEFAULT_INTERVAL
         @retrievals = 0
