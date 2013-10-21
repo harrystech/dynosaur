@@ -121,12 +121,12 @@ module Dynosaur
             if scaler_config.nil?
                 raise "Please include a 'scaler' block in the config"
             end
-            @min_web_dynos = scaler_config.has_key?("min_web_dynos") ? scaler_config["min_web_dynos"] : DEFAULT_MIN_WEB_DYNOS
-            @max_web_dynos = scaler_config.has_key?("max_web_dynos") ? scaler_config["max_web_dynos"] : DEFAULT_MAX_WEB_DYNOS
-            @dry_run = scaler_config.has_key?("dry_run") ? scaler_config["dry_run"] : false
-            @stats = scaler_config.has_key?("stats") ? scaler_config["stats"] : false
-            @interval = scaler_config.has_key?("interval") ? scaler_config["interval"] : DEFAULT_SCALER_INTERVAL
-            @blackout = scaler_config.has_key?("blackout") ? scaler_config["blackout"] : DEFAULT_DOWNSCALE_BLACKOUT
+            @min_web_dynos = scaler_config.fetch("min_web_dynos", DEFAULT_MIN_WEB_DYNOS)
+            @max_web_dynos = scaler_config.fetch("max_web_dynos", DEFAULT_MAX_WEB_DYNOS)
+            @dry_run = scaler_config.fetch("dry_run", false)
+            @stats = scaler_config.fetch("stats", false)
+            @interval = scaler_config.fetch("interval", DEFAULT_SCALER_INTERVAL)
+            @blackout = scaler_config.fetch("blackout", DEFAULT_DOWNSCALE_BLACKOUT)
 
             if scaler_config["heroku_api_key"].nil? || scaler_config["heroku_app_name"].nil?
                 raise "You must specify your heroku API key and app name in the scaler section of config"

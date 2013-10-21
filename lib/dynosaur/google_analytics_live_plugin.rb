@@ -19,8 +19,8 @@ class GoogleAnalyticsPlugin < ScalerPlugin
     def initialize(config)
         super
         @unit = "active users"
-        @keyfile = config.has_key?("keyfile") ? config["keyfile"] : KEYFILE
-        @passphrase = config.has_key?("passphrase") ? config["passphrase"] : PASSPHRASE
+        @keyfile = config.fetch("keyfile", KEYFILE)
+        @passphrase = config.fetch("passphrase", PASSPHRASE)
         @client_email = config["client_email"]
         @analytics_view_id = config["analytics_view_id"]
         @users_per_dyno = config["users_per_dyno"]
