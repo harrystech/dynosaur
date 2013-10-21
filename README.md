@@ -111,3 +111,5 @@ You can pull any configuration you require from the config hash passed to
 `from_config()`.
 
 See the Google Analytics plugin or the toy Random plugin for an example.
+
+[![Code Climate](https://codeclimate.com/github/harrystech/dynosaur.png)](https://codeclimate.com/github/harrystech/dynosaur)
