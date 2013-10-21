@@ -1,16 +1,16 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'analytics-dyno-scaler/version'
+require 'dynosaur/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "analytics-dyno-scaler"
-  spec.version       = AnalyticsDynoScaler::VERSION
+  spec.name          = "dynosaur"
+  spec.version       = Dynosaur::VERSION
   spec.authors       = ["Andy O'Neill", "Daniel Schwartz"]
   spec.email         = ["aoneill@harrys.com",  'daniel@harrys.com']
   spec.description   = %q{Heroku autoscaler based on plugabble analytics APIs}
   spec.summary       = %q{Heroku autoscaler}
-  spec.homepage      = "http://github.com/harrystech/analytics-dyno-scaler"
+  spec.homepage      = "http://github.com/harrystech/dynosaur"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

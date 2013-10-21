@@ -3,7 +3,7 @@
 require 'rubygems'
 
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
-require "analytics_dyno_scaler"
+require "dynosaur"
 require 'yaml'
 require 'pry'
 
@@ -20,8 +20,8 @@ end
 config = load_config
 
 
-AnalyticsDynoScaler.initialize(config)
+Dynosaur.initialize(config)
 
 
-AnalyticsDynoScaler.start_autoscaler
+Dynosaur.start_autoscaler
 

@@ -1,7 +1,7 @@
-require 'analytics_dyno_scaler/scaler_plugin'
-require 'analytics_dyno_scaler/heroku_manager'
+require 'dynosaur/scaler_plugin'
+require 'dynosaur/heroku_manager'
 
-module AnalyticsDynoScaler
+module Dynosaur
     class << self
         DEFAULT_MIN_WEB_DYNOS = 2
         DEFAULT_MAX_WEB_DYNOS = 100
@@ -105,7 +105,7 @@ module AnalyticsDynoScaler
         private
         def load_plugins
             # Load plugins (see glob on next line)
-            load_path = File.join(File.dirname(__FILE__), "analytics_dyno_scaler", "*_plugin.rb")
+            load_path = File.join(File.dirname(__FILE__), "dynosaur", "*_plugin.rb")
             puts "Loading plugins from #{load_path}"
             Gem.find_files(load_path).each { |path|
                 if path.split("/")[-1] == "scaler_plugin.rb"

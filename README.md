@@ -1,4 +1,4 @@
-# Analytics Dyno Scaler
+# Dynosaur
 
 An auto-scaling engine for Heroku web dynos using pluggable API connections.
 The first API is Google Analytics Live, which uses the number of active users
@@ -8,7 +8,7 @@ on the site to decide how many dynos to run.
 
 Add this line to your application's Gemfile:
 
-    gem 'analytics-dyno-scaler'
+    gem 'dynosaur'
 
 And then execute:
 
@@ -16,7 +16,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install analytics-dyno-scaler
+    $ gem install dynosaur
 
 ## Companion Rails App
 
@@ -28,10 +28,10 @@ TODO: link to app.
 
 ## CLI Usage
 
-In addition to the Rails app, analytics-dyno-scaler comes with a command line
+In addition to the Rails app, dynosaur comes with a command line
 interface that can be configured from a JSON config file.
 
-    analytics-dyno-scaler config.yaml
+    dynosaur config.yaml
 
 An example config file is included.
 
