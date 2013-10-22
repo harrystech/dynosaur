@@ -48,7 +48,7 @@ class GoogleAnalyticsPlugin < ScalerPlugin
         if @value.nil?
             return -1
         end
-        return (@value / @users_per_dyno).ceil
+        return (@value / @users_per_dyno.to_f).ceil
     end
 
     private
