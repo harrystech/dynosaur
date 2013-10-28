@@ -2,3 +2,8 @@
 /*.cache
 /config.yaml
 /Gemfile.lock
+/vendor/bin
+/vendor/cache
+/vendor/gems
+/vendor/specifications
+/.bundle
