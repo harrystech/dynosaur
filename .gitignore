@@ -1,3 +1,4 @@
 /tmp
 /*.cache
 /config.yaml
+/Gemfile.lock
