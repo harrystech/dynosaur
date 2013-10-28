@@ -4,6 +4,6 @@ gemspec
 
 gem 'heroku-api'
 gem 'google-api-client'
-gem 'newrelic_api'
+#gem 'newrelic_api'
 
 

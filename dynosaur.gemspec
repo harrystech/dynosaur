@@ -23,4 +23,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec-mocks"
+  spec.add_development_dependency "httparty"
+
+  spec.add_dependency "heroku-api"
+  spec.add_dependency 'google-api-client', "~> 0.6.4"
 end
