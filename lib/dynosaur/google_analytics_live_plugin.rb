@@ -23,7 +23,7 @@ class GoogleAnalyticsPlugin < ScalerPlugin
         @passphrase = config.fetch("passphrase", PASSPHRASE)
         @client_email = config["client_email"]
         @analytics_view_id = config["analytics_view_id"]
-        @users_per_dyno = config["users_per_dyno"]
+        @users_per_dyno = config["users_per_dyno"].to_i
 
         if @client_email.nil?
             raise "You must supply client_email in the google analytics plugin config"

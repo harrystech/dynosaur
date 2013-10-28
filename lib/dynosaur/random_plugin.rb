@@ -9,7 +9,7 @@ class RandomPlugin < ScalerPlugin
     def initialize(config)
         super
         # stupid, kinda, but wanted to test plugin-specific options
-        @seed = config["seed"] # not even using it really
+        @seed = config["seed"].to_i # not even using it really
         @unit = "randoms"
     end
 
