@@ -31,7 +31,7 @@ TODO: link to app.
 In addition to the Rails app, dynosaur comes with a command line
 interface that can be configured from a JSON config file.
 
-    dynosaur config.yaml
+    $ dynosaur config.yaml
 
 An example config file is included.
 
@@ -82,6 +82,8 @@ seconds. The format is CSV with these columns:
 
 - `api_private_key` : Filename of the p12 private key from the developer console
 - `api_key_passphrase` : passphrase to decrypt the private key (optional, only required for encrypted keys)
+- `api_key_pem` : (optional) The non-encrypted PEM representation of the private
+  key (see below)
 - `analytics_view_id` : The ID of the analytics view you want to monitor.
 - `client_email` : The client email from the developer console.
 - `users_per_dyno` : How many users can one dyno handle?
@@ -95,6 +97,12 @@ To retrieve the API credentials, log in to the [Cloud Console](https://cloud.goo
 - Go into new app and generate certificate. Note the password ('notasecret' by
   default)
 - Retrieve the generated email and private key
+
+
+(Optional) to convert from encrypted pkcs12 file to an ASCII pem file:
+
+    $ openssl pkcs12 -in ~/.google/private.p12 -out ~/.google/private.pem \
+		-nodes -clcerts
 
 ## Contributing
 

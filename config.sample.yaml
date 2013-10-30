@@ -20,4 +20,21 @@ plugins:
 
         analytics_view_id: GET_THIS_FROM_THE_ANALYTICS_WEB_APP
         users_per_dyno: 100
+        # API key text is optional, if not supplied we try to load the key from ~/.google/private.p12
+        # Use a pipe and keep key text indented
+        # To get PEM text from Google cert:
+        # openssl pkcs12 -in ~/.google/private.p12 -out ~/.google/private.pem -nodes -clcerts
+        key: |
+          -----BEGIN RSA PRIVATE KEY-----
+          MIIJKAIBAAKCAgEAot6L3gF0TEp5Sazoc8XgORq+8gAjlQInoFHT1zqaWof3BZfl
+          Mlx8eTMGHJHiAubQD/IeXLrQ0bVyS0y01uQEb9OEtCJEuLAuhuhg72/61woNIQx2
+          89HV6wIuVUzUt+Ya2HvnZmMrSAZgiMW+i11K1iz7LVdBL7qbtbb3Zoqs/7FleYTw
+          sourGCrru0Fcrr5YIwDuwQdXU7EiCvB6RzYUyCM2C1al27ihRkt8Wb7Fuj34NMeJ
+          wKrEdsaphBFquFF1WyvzOZm/U0ieM/TjErSBkKbDQc8P0ercJQGvAutCymx5vB9j
+          dCU7YGEN+/HP0EzdOE6u02EEdiCG6TgNGb4goDXOvCcjUD9Rwa2Htqd00Os4y2WV
+          KZGbdmkmiOd4xzpYegl9Lr6WDtSEx9DIrYwZSq1ivzkf4SOYE0SiOgFHxH+ty/iW
+          mjrBfza6a5pErMES+vrDI27SyPxhyv3+UAsfx/PDpFxm8i36Hokf2bBIG7SwGooM
+          aNx0tGhbpIMlZTQ1sU6MzHVXHNy53+1lsq+jkBtkwNWWN8QzlavanUi20CkDMKp8
+          -----END RSA PRIVATE KEY-----
+
 

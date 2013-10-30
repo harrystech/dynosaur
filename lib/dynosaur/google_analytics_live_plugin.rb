@@ -21,6 +21,7 @@ class GoogleAnalyticsPlugin < ScalerPlugin
         @unit = "active users"
         @keyfile = config.fetch("keyfile", KEYFILE)
         @passphrase = config.fetch("passphrase", PASSPHRASE)
+        @keytext = config.fetch("key", "")
         @client_email = config["client_email"]
         @analytics_view_id = config["analytics_view_id"]
         @users_per_dyno = config["users_per_dyno"].to_i
@@ -65,9 +66,15 @@ class GoogleAnalyticsPlugin < ScalerPlugin
     def init_api
         @client = Google::APIClient.new(
             :application_name => "Analytics Dyno Scaler",
-            :application_version => '1.0.0')  # TODO get real version
+            :application_version => Dynosaur::VERSION)
         @client.authorization = nil
-        @key = Google::APIClient::KeyUtils.load_from_pkcs12(@keyfile, @passphrase)
+        if @keytext  # load key from string
+            puts "Loading key from PEM text"
+            @key = OpenSSL::PKey::RSA.new(@keytext)
+        else  # load key from encrypted file
+            puts "Loading key from file #{@keyfile}"
+            @key = Google::APIClient::KeyUtils.load_from_pkcs12(@keyfile, @passphrase)
+        end
         @analytics = nil
 
         # Load cached discovered API, if it exists. This prevents retrieving the
