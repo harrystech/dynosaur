@@ -39,6 +39,16 @@ class GoogleAnalyticsPlugin < ScalerPlugin
 
     end
 
+    def self.get_config_template
+        t = {
+            "client_email" => ["text"],
+            "key" => ["textarea", "42", "27" ],
+            "analytics_view_id" => ["text"],
+            "users_per_dyno" => ["text"]
+        }
+        return t
+    end
+
     def retrieve
         return get_active_users
     end

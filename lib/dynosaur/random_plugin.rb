@@ -27,5 +27,11 @@ class RandomPlugin < ScalerPlugin
         return (@value / 2.0).ceil
     end
 
+    def self.get_config_template
+        {
+            "seed" => ["text"]
+        }
+    end
+
 
 end

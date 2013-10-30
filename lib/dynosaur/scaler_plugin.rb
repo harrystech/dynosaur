@@ -33,6 +33,9 @@ class ScalerPlugin
         raise "ERROR: You must define estimated_dynos() in your plugin"
     end
 
+    def self.get_config_template
+      raise "ERROR: You must define get_config_template in your plugin"
+    end
 
     # Get value (handles caching and API retrieval)
     def get_value
