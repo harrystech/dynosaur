@@ -12,7 +12,7 @@ module Dynosaur
         DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
         DEFAULT_DOWNSCALE_BLACKOUT = 300 # seconds to wait after change before dropping
 
-        attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval
+        attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval, :dry_run
 
         def initialize(config)
             puts "Running initialize"
@@ -85,11 +85,11 @@ module Dynosaur
         # Get status hash (used in dynosaur-rails)
         def get_status
             status = {
-                "time" => Time.now.to_i,
+                "time" => Time.now,
                 "current" => @current,
                 "current_estimate" => @current_estimate,
-                "last_changed" => @last_change_ts.to_i,
-                "results" => @last_results
+                "last_changed" => @last_change_ts,
+                "results" => @last_results,
             }
             return status
         end
@@ -137,7 +137,8 @@ module Dynosaur
                 details[plugin.name] = {
                     "estimate" => estimate,
                     "value" => value,
-                    "unit" => plugin.unit
+                    "unit" => plugin.unit,
+                    "last_retrieved" => plugin.last_retrieved_ts
                 }
                 estimates << estimate
             }
