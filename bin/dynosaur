@@ -5,7 +5,6 @@ require 'rubygems'
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require "dynosaur"
 require 'yaml'
-require 'pry'
 
 def load_config
     if ARGV.length != 1

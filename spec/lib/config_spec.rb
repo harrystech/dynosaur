@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 require 'dynosaur'
-require 'pry'
 
 describe "Loading plugins" do
     it "Should load plugin classes" do

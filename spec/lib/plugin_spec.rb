@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 require 'dynosaur'
-require 'pry'
 
 describe "Plugins" do
     it "should retrieve and cache value properly" do

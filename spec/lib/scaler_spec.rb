@@ -3,7 +3,6 @@
 
 require 'spec_helper'
 require 'dynosaur'
-require 'pry'
 
 describe "scaler" do
     it "should run the loop and modify settings" do
