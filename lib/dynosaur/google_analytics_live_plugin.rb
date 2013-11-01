@@ -2,7 +2,6 @@
 require 'google/api_client'
 require 'google/api_client/client_secrets'
 require 'google/api_client/auth/installed_app'
-require 'pry'
 
 # ScalerPlugin implementation that uses Google Analytics Live API
 # to get the current active users on the site, and scale to an

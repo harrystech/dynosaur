@@ -1,6 +1,5 @@
 
 require 'heroku-api'
-require 'pry'
 
 class HerokuManager
     HEROKU_POLL_INTERVAL = 60

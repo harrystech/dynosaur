@@ -2,7 +2,6 @@ require 'dynosaur/scaler_plugin'
 require 'dynosaur/heroku_manager'
 
 require 'pp'
-require 'pry'
 require 'json'
 
 module Dynosaur
