@@ -1,5 +1,6 @@
 require 'dynosaur/scaler_plugin'
 require 'dynosaur/heroku_manager'
+require 'dynosaur/version'
 
 require 'pp'
 require 'json'
@@ -14,10 +15,12 @@ module Dynosaur
         attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval, :dry_run
 
         def initialize(config)
-            puts "Running initialize"
+            puts "Dynosaur version #{Dynosaur::VERSION} initializing"
             load_plugins
-            global_config(config["scaler"])
-            config_plugins(config["plugins"])
+            unless config.nil?
+              global_config(config["scaler"])
+              config_plugins(config["plugins"])
+            end
             @stopped = false
             @current_estimate = 0
             @current = 0
