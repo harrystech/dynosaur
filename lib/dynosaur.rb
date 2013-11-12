@@ -132,15 +132,22 @@ module Dynosaur
         def get_combined_estimate
             estimates = []
             details = {}
+            now = Time.now
             # Get the estimated dynos from all configured plugins
             @plugins.each { |plugin|
                 value = plugin.get_value
                 estimate = plugin.estimated_dynos  # minor race condition, but only matters for logging
+                health = "OK"
+                if now - plugin.last_retrieved_ts > plugin.interval
+                  health = "STALE"
+                end
                 details[plugin.name] = {
                     "estimate" => estimate,
                     "value" => value,
                     "unit" => plugin.unit,
-                    "last_retrieved" => plugin.last_retrieved_ts
+                    "last_retrieved" => plugin.last_retrieved_ts,
+                    "health" => health
+
                 }
                 estimates << estimate
             }
