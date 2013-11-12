@@ -239,9 +239,15 @@ module Dynosaur
                 row += ",#{name},#{result["estimate"]},#{result["value"]}"
             }
 
-            open('stats.txt', 'a') { |f|
-                f.puts row
-            }
+            # In heroku, we output to stdout
+            if ENV.has_key?("DYNO")
+              puts "STATS: #{row}"
+            else
+              # Otherwise, we can output to file
+              open('stats.txt', 'a') { |f|
+                  f.puts row
+              }
+            end
         end
 
 
