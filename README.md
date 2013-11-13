@@ -21,10 +21,9 @@ Or install it yourself as:
 ## Companion Rails App
 
 This engine gem is primarily intended to be run as part of the companion rails
-app on a Heroku dyno. That rails app stores the engine config in a database and
+app, ["Dynosaur Rails"](https://github.com/harrystech/dynosaur-rails), on a
+Heroku dyno. Dynosaur-Rails stores the engine config in a database and
 runs the decision engine loop in a background thread.
-
-You can find that [here](https://github.com/harrystech/dynosaur-rails).
 
 ## CLI Usage
 
