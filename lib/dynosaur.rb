@@ -4,6 +4,7 @@ require 'dynosaur/version'
 
 require 'pp'
 require 'json'
+require 'stathat'
 
 module Dynosaur
     class << self
@@ -13,21 +14,38 @@ module Dynosaur
         DEFAULT_DOWNSCALE_BLACKOUT = 300 # seconds to wait after change before dropping
 
         attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval, :dry_run
+        attr_accessor :stats_callback
 
         def initialize(config)
             puts "Dynosaur version #{Dynosaur::VERSION} initializing"
+
+            # Config defaults
+            @min_web_dynos = DEFAULT_MIN_WEB_DYNOS
+            @max_web_dynos = DEFAULT_MAX_WEB_DYNOS
+            @dry_run = false
+            @stats = false
+            @interval = DEFAULT_SCALER_INTERVAL
+            @blackout = DEFAULT_DOWNSCALE_BLACKOUT
+            @heroku_api_key = nil
+            @heroku_app_name = nil
+            @stathat_api_key = nil
+
             load_plugins
             unless config.nil?
               global_config(config["scaler"])
               config_plugins(config["plugins"])
             end
+
+            # State variables
             @stopped = false
             @current_estimate = 0
             @current = 0
-            @desired_state
+            @desired_state = @min_web_dynos
             @last_change_ts = nil
             @last_results = {}
             @server = nil
+            @stats_callback = self.method(:stathat_send) # default built-in stats callback
+
         end
 
 
@@ -63,7 +81,7 @@ module Dynosaur
 
                 sleep @interval
                 if @stats
-                    output_stats(now, @current_estimate, @desired_state, before, after)
+                    handle_stats(now, @current_estimate, @desired_state, before, after)
                 end
             end
         end
@@ -103,14 +121,7 @@ module Dynosaur
 
             if config.has_key?("scaler")
                 puts "Modifying scaler config"
-                scaler_config = config["scaler"]
-                @min_web_dynos = scaler_config.fetch("min_web_dynos", @min_web_dynos)
-                @max_web_dynos = scaler_config.fetch("max_web_dynos", @max_web_dynos)
-                @interval = scaler_config.fetch("interval", @interval)
-                @blackout = scaler_config.fetch("blackout", @blackout)
-
-                @heroku_api_key = scaler_config.fetch("heroku_api_key", @heroku_api_key)
-                @heroku_app_name = scaler_config.fetch("heroku_app_name", @heroku_app_name)
+                global_config(config["scaler"])
             end
             if config.has_key?("plugins")
                 config["plugins"].each { |plugin_config|
@@ -196,19 +207,21 @@ module Dynosaur
             if scaler_config.nil?
                 raise "Please include a 'scaler' block in the config"
             end
-            @min_web_dynos = scaler_config.fetch("min_web_dynos", DEFAULT_MIN_WEB_DYNOS)
-            @max_web_dynos = scaler_config.fetch("max_web_dynos", DEFAULT_MAX_WEB_DYNOS)
-            @dry_run = scaler_config.fetch("dry_run", false)
-            @stats = scaler_config.fetch("stats", false)
-            @interval = scaler_config.fetch("interval", DEFAULT_SCALER_INTERVAL)
-            @blackout = scaler_config.fetch("blackout", DEFAULT_DOWNSCALE_BLACKOUT)
+            @min_web_dynos = scaler_config.fetch("min_web_dynos", @min_web_dynos)
+            @max_web_dynos = scaler_config.fetch("max_web_dynos", @max_web_dynos)
+            @dry_run = scaler_config.fetch("dry_run", @dry_run)
+            @stats = scaler_config.fetch("stats", @stats)
+            @interval = scaler_config.fetch("interval", @interval)
+            @blackout = scaler_config.fetch("blackout", @blackout)
+            @stathat_api_key = scaler_config.fetch("stathat_api_key", @stathat_api_key)
 
-            if scaler_config["heroku_api_key"].nil? || scaler_config["heroku_app_name"].nil?
+            @heroku_api_key = scaler_config.fetch("heroku_api_key", @heroku_api_key)
+            @heroku_app_name = scaler_config.fetch("heroku_app_name", @heroku_app_name)
+
+            if @heroku_api_key.nil? || @heroku_app_name.nil?
                 raise "You must specify your heroku API key and app name in the scaler section of config"
             end
 
-            @heroku_api_key = scaler_config["heroku_api_key"]
-            @heroku_app_name = scaler_config["heroku_app_name"]
         end
 
         # Take the plugin config and return a bunch of plugin instances
@@ -238,23 +251,37 @@ module Dynosaur
             return plugin
         end
 
-        def output_stats(now, combined_estimate, desired_state, before, after)
-            row = "#{now},#{now.to_i},#{combined_estimate},#{desired_state},#{before},#{after}"
+        def handle_stats(now, combined_estimate, desired_state, before, after)
             results = @last_results  # try to minimize race conditions in the iteration
-            results.keys.sort.each { |name|
-                result = results[name]
-                row += ",#{name},#{result["estimate"]},#{result["value"]}"
+            stats = {
+              :plugins => results,
+              :ts => now,
+              :estimate => combined_estimate,
+              :desired => desired_state,
+              :before => before,
+              :after => after
             }
+          if !@stats_callback.nil?
+            @stats_callback.call(stats)
+          end
+        end
 
-            # In heroku, we output to stdout
-            if ENV.has_key?("DYNO")
-              puts "STATS: #{row}"
-            else
-              # Otherwise, we can output to file
-              open('stats.txt', 'a') { |f|
-                  f.puts row
-              }
+        # Default stats callback: stathat
+        def stathat_send(stats)
+            if @stathat_api_key.nil?
+              return
             end
+            stats[:plugins].keys.sort.each { |name|
+              result = stats[:plugins][name]
+              StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.#{name}.value", 
+                                         @stathat_api_key, result["value"])
+              StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.#{name}.estimate",
+                                         @stathat_api_key, result["estimate"])
+            }
+            StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.combined.actual",
+                                       @stathat_api_key, stats[:after])
+            StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.combined.estimate",
+                                       @stathat_api_key, stats[:estimate])
         end
 
 

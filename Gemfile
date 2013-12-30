@@ -4,6 +4,7 @@ gemspec
 
 gem 'heroku-api'
 gem 'google-api-client'
+gem 'stathat'
 #gem 'newrelic_api'
 
 

@@ -6,6 +6,7 @@ scaler:
     dry_run: true    # Will not actually connect to Heroku in this mode
     interval: 5      # Wake up every 5s to check APIs
     blackout: 300    # Do not downscale for this many seconds after scaling up or down.
+    stathat_api_key: GET_THIS_FROM_STATHAT # optional
 plugins:
     -
         name: random        # Freeform name
