@@ -92,16 +92,25 @@ NOTE: the analytics live API is in closed beta as of 2013-10-16.
 To retrieve the API credentials, log in to the [Cloud Console](https://cloud.google.com/console#/project) and perform the following steps:
 
 - APIs: enable analytics API
-- Registered Apps -> Register App
-- Go into new app and generate certificate. Note the password ('notasecret' by
+- Credentials: generate an OAuth 'service account' with a certificate. Note the key passphrase ('notasecret' by
   default)
-- Retrieve the generated email and private key
+- Retrieve the generated email address and private key for the service account
+
+(Recommended for dynosaur-rails) Convert the encrypted pkcs12 file to an unencrypted ASCII
+private key:
+
+    $ openssl pkcs12 -in foo.p12 -nodes -clcerts
+
+- Use the output between -----BEGIN RSA PRIVATE KEY and -----END RSA PRIVATE KEY
+  (including those lines) as the value for `api_key_pem`
+
+In the Analytics admin console:
+
+- Under "User Management" in either property or view sections, add the service account you just created as an 
+	authorized user with 'Read and Analyze' permissions.
+- Retrieve the view ID under 'View->View Settings'
 
 
-(Optional) to convert from encrypted pkcs12 file to an ASCII pem file:
-
-    $ openssl pkcs12 -in ~/.google/private.p12 -out ~/.google/private.pem \
-		-nodes -clcerts
 
 ## Contributing
 

@@ -117,6 +117,10 @@ class GoogleAnalyticsPlugin < ScalerPlugin
         begin
             authorize
             r = @client.execute(:api_method => @analytics.data.realtime.get, :parameters => { 'ids' => "ga:#{@analytics_view_id}", 'metrics' => 'ga:activeVisitors'})
+
+            if r.data.totalResults == 0
+              return 0
+            end
             active = r.data.rows[0][0].to_i
         rescue Exception => e
             puts "ERROR: failed to decipher result, forcing re-auth"
