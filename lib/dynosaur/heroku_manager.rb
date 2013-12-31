@@ -43,7 +43,7 @@ class HerokuManager
     def set(dynos)
         puts "Setting current dynos to #{dynos}"
         if not @dry_run
-            #@heroku.post_ps_scale(@app_name, 'web', dynos)
+            @heroku.post_ps_scale(@app_name, 'web', dynos)
         end
         @current_dynos = dynos
     end
