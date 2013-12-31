@@ -4,7 +4,7 @@ require 'dynosaur/version'
 
 require 'pp'
 require 'json'
-require 'stathat'
+require 'librato/metrics'
 
 module Dynosaur
     class << self
@@ -28,7 +28,8 @@ module Dynosaur
             @blackout = DEFAULT_DOWNSCALE_BLACKOUT
             @heroku_api_key = nil
             @heroku_app_name = nil
-            @stathat_api_key = nil
+            @librato_api_key = nil
+            @librato_email = nil
 
             load_plugins
             unless config.nil?
@@ -44,7 +45,7 @@ module Dynosaur
             @last_change_ts = nil
             @last_results = {}
             @server = nil
-            @stats_callback = self.method(:stathat_send) # default built-in stats callback
+            @stats_callback = self.method(:librato_send) # default built-in stats callback
 
         end
 
@@ -80,9 +81,7 @@ module Dynosaur
                 puts "#{now} current: #{@current_estimate}; #{before}=>#{after}] - #{details}"
 
                 sleep @interval
-                if @stats
-                    handle_stats(now, @current_estimate, @desired_state, before, after)
-                end
+                handle_stats(now, @current_estimate, @desired_state, before, after)
             end
         end
 
@@ -213,7 +212,8 @@ module Dynosaur
             @stats = scaler_config.fetch("stats", @stats)
             @interval = scaler_config.fetch("interval", @interval)
             @blackout = scaler_config.fetch("blackout", @blackout)
-            @stathat_api_key = scaler_config.fetch("stathat_api_key", @stathat_api_key)
+            @librato_api_key = scaler_config.fetch("librato_api_key", @librato_api_key)
+            @librato_email = scaler_config.fetch("librato_email", @librato_email)
 
             @heroku_api_key = scaler_config.fetch("heroku_api_key", @heroku_api_key)
             @heroku_app_name = scaler_config.fetch("heroku_app_name", @heroku_app_name)
@@ -266,22 +266,28 @@ module Dynosaur
           end
         end
 
-        # Default stats callback: stathat
-        def stathat_send(stats)
-            if @stathat_api_key.nil?
+        # Built-in stats callback: librato
+        def librato_send(stats)
+            if @librato_api_key.nil? || @librato_api_key.empty? || @librato_email.nil? || @librato_email.empty?
+              puts "No librato api key and email"
               return
             end
-            stats[:plugins].keys.sort.each { |name|
-              result = stats[:plugins][name]
-              StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.#{name}.value", 
-                                         @stathat_api_key, result["value"])
-              StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.#{name}.estimate",
-                                         @stathat_api_key, result["estimate"])
-            }
-            StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.combined.actual",
-                                       @stathat_api_key, stats[:after])
-            StatHat::API.ez_post_value("dynosaur.#{@heroku_app_name}.combined.estimate",
-                                       @stathat_api_key, stats[:estimate])
+            begin
+              Librato::Metrics.authenticate(@librato_email, @librato_api_key)
+
+              metrics = {}
+              stats[:plugins].keys.sort.each { |name|
+                result = stats[:plugins][name]
+                metrics["dynosaur.#{@heroku_app_name}.#{name}.value"] = result["value"]
+                metrics["dynosaur.#{@heroku_app_name}.#{name}.estimate"] = result["estimate"]
+              }
+              metrics["dynosaur.#{@heroku_app_name}.combined.actual"] = stats[:after]
+              metrics["dynosaur.#{@heroku_app_name}.combined.estimate"] = stats[:estimate]
+
+              Librato::Metrics.submit(metrics)
+            rescue
+              puts "Error sending librato metrics"
+            end
         end
 
 
