@@ -4,26 +4,18 @@ An auto-scaling engine for Heroku web dynos using pluggable API connections.
 The first API is Google Analytics Live, which uses the number of active users
 on the site to decide how many dynos to run.
 
-## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'dynosaur'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install dynosaur
-
 ## Companion Rails App
 
 This engine gem is primarily intended to be run as part of the companion rails
 app, ["Dynosaur Rails"](https://github.com/harrystech/dynosaur-rails), on a
 Heroku dyno. Dynosaur-Rails stores the engine config in a database and
 runs the decision engine loop in a background thread.
+
+## Installation
+
+If you wish to run standalone, rather than with Dynosaur-Rails:
+
+    $ gem install dynosaur
 
 ## CLI Usage
 
@@ -54,8 +46,9 @@ autoscaler.
  - `blackout` (int): Time (in seconds) during which we will not scale **down** after
         any change. This is to prevent rapid cycling up-and-down, whilst still
         allowing rapid increases when required. Default is 300s i.e. 5 minutes.
- - `stats` (boolean): When set to 'true', we output the status as a CSV every
-        *interval* seconds.
+ - `librato_email` (string): Optional, set Librato account to track statistics.
+ - `librato_api_key` (string): Optional, set Librato account to track
+        statistics.
 
 The CLI program will run indefinitely, with info output to stdout at intervals.
 
@@ -65,29 +58,28 @@ returns 5, you should scale to 5 dynos.)
 
 ### Statistics
 
-If `stats` is enabled, then a file `./stats.txt` is written every *interval*
-seconds. The format is CSV with these columns:
+Dynosaur can optionally use [Librato](http://librato.com) to collect some
+statistics on its operation. You can start with a free account, and enter the email address and API key in the config.
+The following stats are sent every *interval* seconds.
 
- - time (human readable)
- - time (unix)
  - combined estimate of dynos required
- - actual dynos requested (includes blackout time)
- - dynos before
- - dynos after
+ - actual dynos requested (includes blackout time and min/max dyno settings)
+
+For each plugin we send
+
+ - value (e.g. 'active users')
+ - plugin dyno estimate
 
 ## Plugin Configuration
 
 ### Google Analytics Configuration
 
-- `api_private_key` : Filename of the p12 private key from the developer console
-- `api_key_passphrase` : passphrase to decrypt the private key (optional, only required for encrypted keys)
-- `api_key_pem` : (optional) The non-encrypted PEM representation of the private
-  key (see below)
+- `key` : The non-encrypted PEM representation of the private key (see below)
 - `analytics_view_id` : The ID of the analytics view you want to monitor.
 - `client_email` : The client email from the developer console.
 - `users_per_dyno` : How many users can one dyno handle?
 
-NOTE: the analytics live API is in closed beta as of 2013-10-16.
+**NOTE: the analytics live API is in closed beta as of 2014-01-03.**
 
 To retrieve the API credentials, log in to the [Cloud Console](https://cloud.google.com/console#/project) and perform the following steps:
 
@@ -96,13 +88,12 @@ To retrieve the API credentials, log in to the [Cloud Console](https://cloud.goo
   default)
 - Retrieve the generated email address and private key for the service account
 
-(Recommended for dynosaur-rails) Convert the encrypted pkcs12 file to an unencrypted ASCII
-private key:
+Convert the encrypted pkcs12 file to an unencrypted ASCII private key:
 
     $ openssl pkcs12 -in foo.p12 -nodes -clcerts
 
 - Use the output between -----BEGIN RSA PRIVATE KEY and -----END RSA PRIVATE KEY
-  (including those lines) as the value for `api_key_pem`
+  (including those lines) as the value for `key`
 
 In the Analytics admin console:
 
@@ -122,9 +113,20 @@ In the Analytics admin console:
 
 ## Writing a Plugin
 
-You'll need to implement the `retrieve()` and `estimated_dynos()` methods.
-You can pull any configuration you require from the config hash passed to
-`from_config()`.
+You'll need to implement the following methods:
+
+`retrieve()`: connect to an API (or wherever) and retrieve a new value. This is
+wrapped in a caching layer by the plugin base class.
+
+`estimated_dynos()`: calculate the estimated number of dynos based on the last
+value retrieved (e.g. we use `users_per_dyno` in the GA plugin).
+
+`initialize(config)`: You can pull any configuration you require from the config hash passed in.
+
+
+`get_config_template()` class method: used by Dynosaur-Rails to create the
+web configuration page, returns a hash of the config values your plugin
+requires.
 
 See the Google Analytics plugin or the toy Random plugin for an example.
 
