@@ -101,6 +101,19 @@ In the Analytics admin console:
 	authorized user with 'Read and Analyze' permissions.
 - Retrieve the view ID under 'View->View Settings'
 
+## Error Reporting
+
+We've added basic support for emailing unexpected errors via Sendgrid. This is
+configured via environment variables, so set these:
+
+    SENDGRID_USERNAME
+	SENDGRID_PASSWORD
+and put your email address in
+
+    DYNOSAUR_ADMIN_EMAIL
+
+(On Heroku, if you add the starter Sendgrid add-on to you app, the SENDGRID
+variables will be set automatically.)
 
 
 ## Contributing
