@@ -17,29 +17,29 @@ RSpec.configure do |config|
 end
 
 def get_config_with_test_plugin(num_plugins=1)
-    api_key = SecureRandom.uuid
-    app_name = SecureRandom.uuid
-    config = {
-        "scaler" => {
-            "min_web_dynos" => 3,
-            "max_web_dynos" => 27,
-            "heroku_api_key" => api_key,
-            "heroku_app_name" => app_name,
-            "dry_run" => true,
-            "interval" => 0.1,
-            "blackout" => 10
+  api_key = SecureRandom.uuid
+  app_name = SecureRandom.uuid
+  config = {
+    "scaler" => {
+      "min_web_dynos" => 3,
+      "max_web_dynos" => 27,
+      "heroku_api_key" => api_key,
+      "heroku_app_name" => app_name,
+      "dry_run" => true,
+      "interval" => 0.1,
+      "blackout" => 10
 
-        }
     }
-    plugins = []
-    num_plugins.times { |i|
-        plugins << {
-                "name" => "random_#{i}",
-                "type" => "RandomPlugin",
-                "seed" => 1234,
-        }
+  }
+  plugins = []
+  num_plugins.times { |i|
+    plugins << {
+      "name" => "random_#{i}",
+      "type" => "RandomPlugin",
+      "seed" => 1234,
     }
-    config["plugins"] = plugins
+  }
+  config["plugins"] = plugins
 
-    return config
+  return config
 end

@@ -7,12 +7,12 @@ require "dynosaur"
 require 'yaml'
 
 def load_config
-    if ARGV.length != 1
-        puts "Usage: #{$0} config.yaml"
-        exit 2
-    end
-    config = YAML.load_file(ARGV[0])
-    return config
+  if ARGV.length != 1
+    puts "Usage: #{$0} config.yaml"
+    exit 2
+  end
+  config = YAML.load_file(ARGV[0])
+  return config
 end
 
 
