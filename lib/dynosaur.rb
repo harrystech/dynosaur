@@ -1,6 +1,7 @@
 require 'dynosaur/scaler_plugin'
 require 'dynosaur/heroku_manager'
 require 'dynosaur/version'
+require 'dynosaur/error_handler'
 
 require 'pp'
 require 'json'
@@ -31,6 +32,8 @@ module Dynosaur
             @librato_api_key = nil
             @librato_email = nil
 
+            ErrorHandler.initialize
+
             load_plugins
             unless config.nil?
               global_config(config["scaler"])
@@ -50,39 +53,54 @@ module Dynosaur
         end
 
 
-        # Start the autoscaler engine loop
+        # Start the autoscaler engine loop in a begin/rescue block
         def start_autoscaler
             @stopped = false
-            @heroku_manager = HerokuManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
+            @heroku_manager = nil
             while true do
+              begin
                 if @stopped
-                    break
+                  break
                 end
-                now = Time.now
-
-                before = @heroku_manager.get_current_dynos
-                @current_estimate = get_combined_estimate
-                @desired_state = get_desired_state(before, @current_estimate, now)
-
-                if @desired_state != before
-                    @heroku_manager.ensure(@desired_state)
-                end
-                after = @heroku_manager.get_current_dynos
-
-                if before != after
-                    puts "CHANGE: #{before} => #{after}"
-                    @last_change_ts = Time.now
-                end
-                @current = after
-                details = ""
-                @last_results.each { |name, result|
-                    details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
-                }
-                puts "#{now} current: #{@current_estimate}; #{before}=>#{after}] - #{details}"
-
+                self.run_loop
                 sleep @interval
-                handle_stats(now, @current_estimate, @desired_state, before, after)
+              rescue SystemExit, Interrupt # purposeful quit, ctrl-c, kill signal etc
+                raise
+              rescue Exception => e  # any other error
+                ErrorHandler.report(e)
+                sleep @interval
+              end
             end
+        end
+
+        # Perform one run of the main autoscaler
+        def run_loop
+          if @heroku_manager.nil?
+            @heroku_manager = HerokuManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
+          end
+          now = Time.now
+
+          before = @heroku_manager.get_current_dynos
+          @current_estimate = get_combined_estimate
+          @desired_state = get_desired_state(before, @current_estimate, now)
+
+          if @desired_state != before
+            @heroku_manager.ensure(@desired_state)
+          end
+          after = @heroku_manager.get_current_dynos
+
+          if before != after
+            puts "CHANGE: #{before} => #{after}"
+            @last_change_ts = Time.now
+          end
+          @current = after
+          details = ""
+          @last_results.each { |name, result|
+            details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
+          }
+          puts "#{now} current: #{@current_estimate}; #{before}=>#{after}] - #{details}"
+
+          handle_stats(now, @current_estimate, @desired_state, before, after)
         end
 
         def stop_autoscaler
@@ -285,8 +303,9 @@ module Dynosaur
               metrics["dynosaur.#{@heroku_app_name}.combined.estimate"] = stats[:estimate]
 
               Librato::Metrics.submit(metrics)
-            rescue
+            rescue Exception => e
               puts "Error sending librato metrics"
+              puts e.message
             end
         end
 

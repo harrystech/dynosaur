@@ -1,5 +1,6 @@
 
 require 'heroku-api'
+require 'dynosaur/error_handler'
 
 class HerokuManager
     HEROKU_POLL_INTERVAL = 60
@@ -24,6 +25,7 @@ class HerokuManager
                 @last_retrieved_ts = now
             rescue Exception => e
                 puts "Error in heroku retrieve : #{e.inspect}"
+                ErrorHandler.report(e)
                 @current_dynos = -1
             end
         end

@@ -27,4 +27,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "heroku-api"
   spec.add_dependency 'google-api-client', "~> 0.6.4"
   spec.add_dependency 'librato-metrics'
+  spec.add_dependency 'mail'
 end

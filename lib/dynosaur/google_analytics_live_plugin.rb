@@ -3,6 +3,7 @@ require 'google/api_client'
 require 'google/api_client/client_secrets'
 require 'google/api_client/auth/installed_app'
 require 'dynosaur/version'
+require 'dynosaur/error_handler'
 
 # ScalerPlugin implementation that uses Google Analytics Live API
 # to get the current active users on the site, and scale to an
@@ -113,6 +114,7 @@ class GoogleAnalyticsPlugin < ScalerPlugin
 
     def get_active_users
 
+
         active = -1
         begin
             authorize
@@ -123,16 +125,15 @@ class GoogleAnalyticsPlugin < ScalerPlugin
             end
             active = r.data.rows[0][0].to_i
         rescue Exception => e
+            ErrorHandler.report(e)
             puts "ERROR: failed to decipher result, forcing re-auth"
             puts e.inspect
             begin
                 authorize(true)
-            rescue
+            rescue Exception => e
+                ErrorHandler.report(e)
             end
         end
         return active
     end
-
-
-
 end
