@@ -6,6 +6,8 @@ scaler:
     dry_run: true    # Will not actually connect to Heroku in this mode
     interval: 5      # Wake up every 5s to check APIs
     blackout: 300    # Do not downscale for this many seconds after scaling up or down.
+    librato_email: GET_THIS_FROM_LIBRATO # optional
+    librato_api_key: GET_THIS_FROM_LIBRATO # optional
 plugins:
     -
         name: random        # Freeform name
@@ -18,5 +20,29 @@ plugins:
         key: ''
         appid: ''
         users_per_dyno: 100
+    -
+        name: ga
+        type: GoogleAnalyticsPlugin
+        interval: 30        # Do not go below 10s, the API limit will kick in!
+        client_email: GET_THIS_FROM_YOUR_CLOUD_CONSOLE
+        users_per_dyno: 100
+
+        analytics_view_id: GET_THIS_FROM_THE_ANALYTICS_WEB_APP
+        # API key text is optional, if not supplied we try to load the key from ~/.google/private.p12
+        # Use a pipe and keep key text indented
+        # To get PEM text from Google cert:
+        # openssl pkcs12 -in ~/.google/private.p12 -nodes -clcerts
+        key: |
+          -----BEGIN RSA PRIVATE KEY-----
+          MIIJKAIBAAKCAgEAot6L3gF0TEp5Sazoc8XgORq+8gAjlQInoFHT1zqaWof3BZfl
+          Mlx8eTMGHJHiAubQD/IeXLrQ0bVyS0y01uQEb9OEtCJEuLAuhuhg72/61woNIQx2
+          89HV6wIuVUzUt+Ya2HvnZmMrSAZgiMW+i11K1iz7LVdBL7qbtbb3Zoqs/7FleYTw
+          sourGCrru0Fcrr5YIwDuwQdXU7EiCvB6RzYUyCM2C1al27ihRkt8Wb7Fuj34NMeJ
+          wKrEdsaphBFquFF1WyvzOZm/U0ieM/TjErSBkKbDQc8P0ercJQGvAutCymx5vB9j
+          dCU7YGEN+/HP0EzdOE6u02EEdiCG6TgNGb4goDXOvCcjUD9Rwa2Htqd00Os4y2WV
+          KZGbdmkmiOd4xzpYegl9Lr6WDtSEx9DIrYwZSq1ivzkf4SOYE0SiOgFHxH+ty/iW
+          mjrBfza6a5pErMES+vrDI27SyPxhyv3+UAsfx/PDpFxm8i36Hokf2bBIG7SwGooM
+          aNx0tGhbpIMlZTQ1sU6MzHVXHNy53+1lsq+jkBtkwNWWN8QzlavanUi20CkDMKp8
+          -----END RSA PRIVATE KEY-----
 
 
