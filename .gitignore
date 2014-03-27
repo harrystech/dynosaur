@@ -8,3 +8,5 @@
 /vendor/gems
 /vendor/specifications
 /.bundle
+.ruby-version
+pkg
