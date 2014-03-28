@@ -10,7 +10,6 @@ require 'dynosaur/error_handler'
 # appropriate number of dynos.
 
 class GoogleAnalyticsPlugin < ScalerPlugin
-  attr_reader :seed
   API_VERSION = "v3"
   CACHED_API_FILE = "analytics-#{API_VERSION}.cache"
   KEYFILE = File.expand_path('~/.google/private.p12')
