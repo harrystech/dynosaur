@@ -2,7 +2,8 @@
 
 An auto-scaling engine for Heroku web dynos using pluggable API connections.
 The first API is Google Analytics Live, which uses the number of active users
-on the site to decide how many dynos to run.
+on the site to decide how many dynos to run. There is also a New Relic plugin
+that uses the requests per minute.
 
 ## Companion Rails App
 
@@ -101,6 +102,13 @@ In the Analytics admin console:
 	authorized user with 'Read and Analyze' permissions.
 - Retrieve the view ID under 'View->View Settings'
 
+### New Relic plugin
+
+- `key` : The New Relic API key: [Instructions](https://docs.newrelic.com/docs/features/api-key)
+- `appid` : The New Relic App ID (numeric ID, not the name)
+- `rpm_per_dyno` : How many requests per minute can one dyno handle?
+
+
 ## Error Reporting
 
 We've added basic support for emailing unexpected errors via Sendgrid. This is
@@ -142,5 +150,11 @@ web configuration page, returns a hash of the config values your plugin
 requires.
 
 See the Google Analytics plugin or the toy Random plugin for an example.
+
+## Contributors
+
+* New Relic plugin by [Jan Lindblom](https://github.com/janlindblom/dynosaur)
+
+
 
 [![TravisCI](https://travis-ci.org/harrystech/dynosaur.png)](https://travis-ci.org/harrystech/dynosaur)

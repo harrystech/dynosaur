@@ -19,7 +19,7 @@ plugins:
         type: NewRelicPlugin
         key: ''
         appid: ''
-        users_per_dyno: 100
+        rpm_per_dyno: 100
     -
         name: ga
         type: GoogleAnalyticsPlugin
