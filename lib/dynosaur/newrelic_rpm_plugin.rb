@@ -1,7 +1,6 @@
 require 'newrelic_api'
 require 'dynosaur/version'
 require 'dynosaur/error_handler'
-require 'pry'
 
 # ScalerPlugin implementation that uses the New Relic API
 # to get the current requests per minute on the site, and scale to an
