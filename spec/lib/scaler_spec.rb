@@ -76,6 +76,11 @@ describe "scaler" do
       Dynosaur.initialize(@config)
     end
 
+    it "should report the error" do
+      Dynosaur.plugins[0].should_receive(:retrieve).at_least(:once) { raise Exception.new "Oh Noes!" }
+      ErrorHandler.should_receive(:report).at_least(:once)
+      Dynosaur.get_combined_estimate
+    end
   end
 
 end
