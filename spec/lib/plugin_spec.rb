@@ -8,7 +8,7 @@ describe "Plugins" do
     config["plugins"][0]["interval"] = 30
     Dynosaur.initialize(config)
     rand = Dynosaur.plugins[0]
-    rand.interval.should eql 30
+    rand.interval.should eql 30.0
 
     # Retrieve the get_value again before cache times out
     ret0 = rand.retrievals
