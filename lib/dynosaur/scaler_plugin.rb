@@ -18,8 +18,8 @@ class ScalerPlugin
     end
     @unit = ""
     @value = nil
-    @interval = config.fetch("interval", DEFAULT_INTERVAL).to_i
-    hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_i
+    @interval = config.fetch("interval", DEFAULT_INTERVAL).to_f
+    hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
     buffer_size = hysteresis_period / @interval  # num intervals to keep
     @recent = RingBuffer.new(buffer_size)
     @retrievals = 0
@@ -74,7 +74,7 @@ class ScalerPlugin
         @last_retrieved_ts = now
       rescue Exception => e
         puts "Error in #{self.name}#retrieve : #{e.inspect}"
-        ErrorHandler.report_error(e)
+        ErrorHandler.report(e)
         @value = -1
       end
       # Store in the ringbuffer
