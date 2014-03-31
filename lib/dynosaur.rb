@@ -2,6 +2,7 @@ require 'dynosaur/scaler_plugin'
 require 'dynosaur/heroku_manager'
 require 'dynosaur/version'
 require 'dynosaur/error_handler'
+require 'dynosaur/ring_buffer'
 
 require 'pp'
 require 'json'
@@ -12,7 +13,6 @@ module Dynosaur
     DEFAULT_MIN_WEB_DYNOS = 2
     DEFAULT_MAX_WEB_DYNOS = 100
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
-    DEFAULT_DOWNSCALE_BLACKOUT = 300 # seconds to wait after change before dropping
 
     attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval, :dry_run
     attr_accessor :stats_callback
@@ -26,7 +26,6 @@ module Dynosaur
       @dry_run = false
       @stats = false
       @interval = DEFAULT_SCALER_INTERVAL
-      @blackout = DEFAULT_DOWNSCALE_BLACKOUT
       @heroku_api_key = nil
       @heroku_app_name = nil
       @librato_api_key = nil
@@ -44,7 +43,6 @@ module Dynosaur
       @stopped = false
       @current_estimate = 0
       @current = 0
-      @desired_state = @min_web_dynos
       @last_change_ts = nil
       @last_results = {}
       @server = nil
@@ -82,10 +80,9 @@ module Dynosaur
 
       before = @heroku_manager.get_current_dynos
       @current_estimate = get_combined_estimate
-      @desired_state = get_desired_state(before, @current_estimate, now)
 
-      if @desired_state != before
-        @heroku_manager.ensure(@desired_state)
+      if @current_estimate != before
+        @heroku_manager.ensure(@current_estimate)
         end
       after = @heroku_manager.get_current_dynos
 
@@ -98,9 +95,9 @@ module Dynosaur
       @last_results.each { |name, result|
         details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
       }
-      puts "#{now} current: #{@current_estimate}; #{before}=>#{after}] - #{details}"
+      puts "#{now} [combined: #{@current_estimate}]  #{details}"
 
-      handle_stats(now, @current_estimate, @desired_state, before, after)
+      handle_stats(now, @current_estimate, before, after)
     end
 
     def stop_autoscaler
@@ -190,21 +187,6 @@ module Dynosaur
       return combined_estimate
     end
 
-    # Give the current desired state, taking into account hysteresis i.e. blackout period
-    # where we do not drop down for x seconds after any change up OR down.
-    def get_desired_state(current, estimate, now)
-      if estimate >= current
-        return estimate  # always scale up quickly
-      end
-
-      if @last_change_ts.nil? || @last_change_ts + @blackout < now
-        return current - 1
-      end
-
-      puts "In blackout, not dropping again until #{@last_change_ts + @blackout}"
-      return current
-    end
-
     private
     def load_plugins
       # Load plugins (see glob on next line)
@@ -229,7 +211,6 @@ module Dynosaur
       @dry_run = scaler_config.fetch("dry_run", @dry_run)
       @stats = scaler_config.fetch("stats", @stats)
       @interval = scaler_config.fetch("interval", @interval)
-      @blackout = scaler_config.fetch("blackout", @blackout)
       @librato_api_key = scaler_config.fetch("librato_api_key", @librato_api_key)
       @librato_email = scaler_config.fetch("librato_email", @librato_email)
 
@@ -269,13 +250,12 @@ module Dynosaur
       return plugin
     end
 
-    def handle_stats(now, combined_estimate, desired_state, before, after)
+    def handle_stats(now, combined_estimate, before, after)
       results = @last_results  # try to minimize race conditions in the iteration
       stats = {
         :plugins => results,
         :ts => now,
         :estimate => combined_estimate,
-        :desired => desired_state,
         :before => before,
         :after => after
       }

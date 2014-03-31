@@ -5,6 +5,28 @@ The first API is Google Analytics Live, which uses the number of active users
 on the site to decide how many dynos to run. There is also a New Relic plugin
 that uses the requests per minute.
 
+## Methodology
+
+Each plugin generates a 'value' at some set interval (e.g. polls the GA API
+every 10s) and provides a conversion from the value ('active users on the site')
+to estimated dynos required. (e.g. 100 active users per dyno). By default this
+has some built in hysteresis, i.e.  the plugins are conservative about
+decreasing their estimate and report the highest estimate of the past `N`
+seconds.
+
+Dynosaur takes the maximum of all plugin estimates, applies a global min/max
+constraint and scales your Heroku app to match.
+
+For example, see this plot of a dummy 'Sine wave' plugin (purple line) and the
+resulting estimated dynos (orange line).
+
+![Sine wave example](doc/hysteresis_640.png)
+
+The plugin estimates 'units' per dyno,
+and Dynosaur is configured with a minimum of 2 dynos. You can see that the
+estimated dynos rapidly tracks the upward slopes, but trails the downward slope
+by about 30s.
+
 ## Companion Rails App
 
 This engine gem is primarily intended to be run as part of the companion rails
@@ -44,9 +66,6 @@ autoscaler.
  - `interval` (int): The autoscaler sleeps for this many seconds before checking for
         activity. Note that each plugin is configured with an API polling
         interval too, so this does not increase the frequency of API polling.
- - `blackout` (int): Time (in seconds) during which we will not scale **down** after
-        any change. This is to prevent rapid cycling up-and-down, whilst still
-        allowing rapid increases when required. Default is 300s i.e. 5 minutes.
  - `librato_email` (string): Optional, set Librato account to track statistics.
  - `librato_api_key` (string): Optional, set Librato account to track
         statistics.
@@ -63,8 +82,7 @@ Dynosaur can optionally use [Librato](http://librato.com) to collect some
 statistics on its operation. You can start with a free account, and enter the email address and API key in the config.
 The following stats are sent every *interval* seconds.
 
- - combined estimate of dynos required
- - actual dynos requested (includes blackout time and min/max dyno settings)
+ - combined estimate of dynos required (includes min/max constraints)
 
 For each plugin we send
 
@@ -72,6 +90,17 @@ For each plugin we send
  - plugin dyno estimate
 
 ## Plugin Configuration
+
+All plugins have the following config values
+
+- `name` : unique identifier for the plugin instance. Freeform.
+- `type` : the name of the plugin class e.g. GoogleAnalyticsPlugin
+- `interval` (default 60s) : how often to poll the respective API. (i.e. the retrieved value
+  is cached for 'interval' seconds.)
+- `hysteresis_period` (default 300s) : the current estimate is based on the
+  maximum value observed within this interval. i.e. If the maximum value of
+  active users observed in the last 5 minutes is 127, we will base our estimate
+  on 127 active users.
 
 ### Google Analytics Configuration
 
@@ -139,8 +168,10 @@ You'll need to implement the following methods:
 `retrieve()`: connect to an API (or wherever) and retrieve a new value. This is
 wrapped in a caching layer by the plugin base class.
 
-`estimated_dynos()`: calculate the estimated number of dynos based on the last
-value retrieved (e.g. we use `users_per_dyno` in the GA plugin).
+`value_to_dynos()`: calculate the estimated number of dynos based on the recent
+maximum value returned by `retrieve()` (e.g. we use `users_per_dyno` in the GA
+plugin). For more fine-grained control, you can override `estimate_dynos()`
+instead.
 
 `initialize(config)`: You can pull any configuration you require from the config hash passed in.
 

@@ -47,7 +47,7 @@ describe "scaler" do
     combined.should eql 17  # 33 / 2 rounded up
 
 
-    Time.stub(:now) { now + 61 } # avoid blackout issues
+    Time.stub(:now) { now + 61 } # avoid hysteresis issues
     # Check that we are constrained by max_web_dynos
     Dynosaur.plugins[0].stub(:retrieve) { config["scaler"]["max_web_dynos"]*4 }
     Dynosaur.plugins[1].stub(:retrieve) { 27 }
@@ -56,7 +56,7 @@ describe "scaler" do
     combined.should eql config["scaler"]["max_web_dynos"]
 
 
-    Time.stub(:now) { now + 300 } # avoid blackout issues
+    Time.stub(:now) { now + 300 } # avoid hysteresis issues
     # Check that we are constrained by min_web_dynos
     Dynosaur.plugins[0].stub(:retrieve) { 0 }
     Dynosaur.plugins[1].stub(:retrieve) { 1 }
@@ -65,29 +65,4 @@ describe "scaler" do
     combined.should eql config["scaler"]["min_web_dynos"]
   end
 
-  it "should obey the blackout period" do
-    config = get_config_with_test_plugin(1)
-
-    config["plugins"][0]["interval"] = 0
-    Dynosaur.initialize(config)
-    Dynosaur.plugins[0].stub(:retrieve) { 10 }
-    combined, details = Dynosaur.get_combined_estimate
-
-    now = Time.now
-    desired = Dynosaur.get_desired_state(10, 12, now)
-    desired.should eql 12
-    Dynosaur.instance_variable_set(:@last_change_ts, now)
-
-    time = now + 1
-    desired = Dynosaur.get_desired_state(12, 11, time)
-    desired.should eql 12
-
-    time = now + 61
-    desired = Dynosaur.get_desired_state(12, 11, time)
-    desired.should eql 11
-
-    time = now + 61
-    desired = Dynosaur.get_desired_state(13, 13, time)
-    desired.should eql 13
-  end
 end

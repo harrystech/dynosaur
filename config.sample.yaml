@@ -5,7 +5,6 @@ scaler:
     max_web_dynos: 20
     dry_run: true    # Will not actually connect to Heroku in this mode
     interval: 5      # Wake up every 5s to check APIs
-    blackout: 300    # Do not downscale for this many seconds after scaling up or down.
     librato_email: GET_THIS_FROM_LIBRATO # optional
     librato_api_key: GET_THIS_FROM_LIBRATO # optional
 plugins:
@@ -20,10 +19,11 @@ plugins:
         key: ''
         appid: ''
         rpm_per_dyno: 100
+        hysteresis_period: 300    # Use the max value from the last 5 mins to estimate demand
     -
         name: ga
         type: GoogleAnalyticsPlugin
-        interval: 30        # Do not go below 10s, the API limit will kick in!
+        interval: 30        # Do not poll more often than 10s, the API limit will kick in!
         client_email: GET_THIS_FROM_YOUR_CLOUD_CONSOLE
         users_per_dyno: 100
 

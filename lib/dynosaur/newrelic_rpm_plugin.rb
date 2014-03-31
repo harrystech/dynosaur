@@ -38,12 +38,10 @@ class NewRelicPlugin < ScalerPlugin
     return get_rpm
   end
 
-  def estimated_dynos
-    @value = self.get_value
-    if @value.nil?
-      return -1
-    end
-    return (@value / @rpm_per_dyno.to_f).ceil
+  def value_to_dynos(value)
+    estimate = (value / @rpm_per_dyno.to_f).ceil
+    puts "NEW RELIC: #{@recent} => #{value} : #{estimate}"
+    return estimate
   end
 
   private
