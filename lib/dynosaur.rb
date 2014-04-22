@@ -30,6 +30,7 @@ module Dynosaur
       @heroku_app_name = nil
       @librato_api_key = nil
       @librato_email = nil
+      @plugins = []
 
       ErrorHandler.initialize
 
