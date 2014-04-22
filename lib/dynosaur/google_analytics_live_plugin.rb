@@ -54,12 +54,8 @@ class GoogleAnalyticsPlugin < ScalerPlugin
     return get_active_users
   end
 
-  def estimated_dynos
-    @value = self.get_value
-    if @value.nil?
-      return -1
-    end
-    return (@value / @users_per_dyno.to_f).ceil
+  def value_to_dynos(value)
+    return (value / @users_per_dyno.to_f).ceil
   end
 
   private

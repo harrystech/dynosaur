@@ -2,7 +2,9 @@
 # specs live under a `spec` directory, which RSpec adds to the `$LOAD_PATH`.
 # Require this file using `require "spec_helper"` to ensure that it is only
 # loaded once.
-#
+
+require 'pry'
+
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true
@@ -27,7 +29,6 @@ def get_config_with_test_plugin(num_plugins=1)
       "heroku_app_name" => app_name,
       "dry_run" => true,
       "interval" => 0.1,
-      "blackout" => 10
 
     }
   }
@@ -37,6 +38,7 @@ def get_config_with_test_plugin(num_plugins=1)
       "name" => "random_#{i}",
       "type" => "RandomPlugin",
       "seed" => 1234,
+      "hysteresis_period" => 30
     }
   }
   config["plugins"] = plugins

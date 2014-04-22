@@ -10,21 +10,19 @@ class RandomPlugin < ScalerPlugin
     super
     # stupid, kinda, but wanted to test plugin-specific options
     @seed = config["seed"].to_i # not even using it really
+    @last =  45 + SecureRandom.random_number(10)
     @unit = "randoms"
   end
 
   def retrieve
-    v = SecureRandom.random_number(100)
+    v = @last + SecureRandom.random_number(18) - 9
+    v = 0 if v < 0
     puts "Generated new random int: #{v}"
     return v
   end
 
-  def estimated_dynos
-    @value = self.get_value
-    if @value.nil?
-      return -1
-    end
-    return (@value / 2.0).ceil
+  def value_to_dynos(value)
+    return (value / 2.0).ceil
   end
 
   def self.get_config_template
