@@ -1,6 +1,4 @@
 
-require 'pry'
-
 # Dummy implementation of ScalerPlugin for testing
 # Just returns sine values and value = dynos estimates
 
