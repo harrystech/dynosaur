@@ -30,4 +30,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'activeresource'
   spec.add_dependency 'librato-metrics'
   spec.add_dependency 'mail'
+  spec.add_dependency 'jwt', "~> 0.1.11"
 end
