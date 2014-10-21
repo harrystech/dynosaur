@@ -22,7 +22,7 @@ describe "scaler" do
       estimated = Dynosaur.current_estimate
       current = Dynosaur.current
       puts "#{i*0.11}s: Estimated = #{estimated}; Current = #{current}"
-      (current >= estimated).should be_true
+      (current >= estimated).should be true
     }
     puts "Stopping autoscaler"
     Dynosaur.stop_autoscaler
