@@ -1,0 +1,33 @@
+dynosaur:
+  addons:
+    rediscloud:
+      "redicloud:25":
+        memory: 25
+        connections: 10
+      "redicloud:100":
+        memory: 100
+        connections: 256
+      "redicloud:250":
+        memory: 250
+        connections: 256
+      "redicloud:500":
+        memory: 500
+        connections: 512
+      "redicloud:1000":
+        memory: 1000
+        connections: 1024
+      "redicloud:2500":
+        memory: 2500
+        connections: 0
+      "redicloud:5000":
+        memory: 5000
+        connections: 0
+      "redicloud:10000":
+        memory: 10000
+        connections: 0
+      "redicloud:25000":
+        memory: 25000
+        connections: 0
+      "redicloud:50000":
+        memory: 50000
+        connections: 0

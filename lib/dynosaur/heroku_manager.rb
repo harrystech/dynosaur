@@ -50,7 +50,7 @@ class HerokuManager
     @current_dynos = dynos
   end
 
-  def ensure(dynos)
+  def ensure_number_of_dynos(dynos)
     @last_retrieved_ts = nil
     current = get_current_dynos
     if current != dynos

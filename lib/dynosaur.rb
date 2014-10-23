@@ -1,28 +1,27 @@
-require 'dynosaur/scaler_plugin'
 require 'dynosaur/heroku_manager'
 require 'dynosaur/version'
 require 'dynosaur/error_handler'
 require 'dynosaur/ring_buffer'
+require 'dynosaur/base_plugin'
+require 'dynosaur/controllers/abstract_controller_plugin'
+require 'dynosaur/inputs/abstract_input_plugin'
 
 require 'pp'
 require 'json'
 require 'librato/metrics'
 
 module Dynosaur
+
+
   class << self
-    DEFAULT_MIN_WEB_DYNOS = 2
-    DEFAULT_MAX_WEB_DYNOS = 100
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
 
-    attr_reader :min_web_dynos, :max_web_dynos, :heroku_app_name, :heroku_api_key, :plugins, :current_estimate, :current, :interval, :dry_run
-    attr_accessor :stats_callback
+    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins
 
     def initialize(config)
       puts "Dynosaur version #{Dynosaur::VERSION} initializing"
 
       # Config defaults
-      @min_web_dynos = DEFAULT_MIN_WEB_DYNOS
-      @max_web_dynos = DEFAULT_MAX_WEB_DYNOS
       @dry_run = false
       @stats = false
       @interval = DEFAULT_SCALER_INTERVAL
@@ -30,27 +29,25 @@ module Dynosaur
       @heroku_app_name = nil
       @librato_api_key = nil
       @librato_email = nil
-      @plugins = []
+      @controller_plugins = []
 
       ErrorHandler.initialize
 
-      load_plugins
+      # Load all controllers
+      load_controller_plugins
+      load_input_plugins
       unless config.nil?
         global_config(config["scaler"])
-        config_plugins(config["plugins"])
+        config_controller_plugins(config["controller_plugins"])
       end
 
       # State variables
       @stopped = false
-      @current_estimate = 0
-      @current = 0
       @last_change_ts = nil
       @last_results = {}
       @server = nil
-      @stats_callback = self.method(:librato_send) # default built-in stats callback
-
+      # @stats_callback = self.method(:librato_send) # default built-in stats callback
     end
-
 
     # Start the autoscaler engine loop in a begin/rescue block
     def start_autoscaler
@@ -74,31 +71,10 @@ module Dynosaur
 
     # Perform one run of the main autoscaler
     def run_loop
-      if @heroku_manager.nil?
-        @heroku_manager = HerokuManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
+      # Run all plugins
+      @controller_plugins.each do |controller_plugin|
+        controller_plugin.run
       end
-      now = Time.now
-
-      before = @heroku_manager.get_current_dynos
-      @current_estimate = get_combined_estimate
-
-      if @current_estimate != before
-        @heroku_manager.ensure(@current_estimate)
-        end
-      after = @heroku_manager.get_current_dynos
-
-      if before != after
-        puts "CHANGE: #{before} => #{after}"
-        @last_change_ts = Time.now
-      end
-      @current = after
-      details = ""
-      @last_results.each { |name, result|
-        details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
-      }
-      puts "#{now} [combined: #{@current_estimate}]  #{details}"
-
-      handle_stats(now, @current_estimate, before, after)
     end
 
     def stop_autoscaler
@@ -129,72 +105,27 @@ module Dynosaur
       return status
     end
 
-    # Modify config at runtime
-    def set_config(config)
-      puts "Dynosaur reconfig:"
-      pp  config
-
-      if config.has_key?("scaler")
-        puts "Modifying scaler config"
-        global_config(config["scaler"])
-      end
-      if config.has_key?("plugins")
-        config["plugins"].each { |plugin_config|
-          found = nil
-          @plugins.each { |plugin|
-            if plugin.name == plugin_config["name"]
-              puts "Replacing config for #{plugin.name}"
-              @plugins.delete(plugin)
-            end
-          }
-          if found.nil?
-            puts "Configuring new plugin"
-          end
-          @plugins << config_one_plugin(plugin_config)
-        }
-      end
-    end
-
-    def get_combined_estimate
-      estimates = []
-      details = {}
-      now = Time.now
-      # Get the estimated dynos from all configured plugins
-      @plugins.each { |plugin|
-        value = plugin.get_value
-        estimate = plugin.estimated_dynos  # minor race condition, but only matters for logging
-        health = "OK"
-        if now - plugin.last_retrieved_ts > plugin.interval
-          health = "STALE"
-        end
-        details[plugin.name] = {
-          "estimate" => estimate,
-          "value" => value,
-          "unit" => plugin.unit,
-          "last_retrieved" => plugin.last_retrieved_ts,
-          "health" => health
-
-        }
-        estimates << estimate
-      }
-      @last_results = details
-
-      # Combine the estimates and mo
-      combined_estimate = estimates.max
-
-      combined_estimate = [@max_web_dynos, combined_estimate].min
-      combined_estimate = [@min_web_dynos, combined_estimate].max
-
-      return combined_estimate
-    end
 
     private
-    def load_plugins
+    def load_controller_plugins
       # Load plugins (see glob on next line)
-      load_path = File.join(File.dirname(__FILE__), "dynosaur", "*_plugin.rb")
+      load_path = File.join(File.dirname(__FILE__), "dynosaur", "controllers", "*_plugin.rb")
       puts "Loading plugins from #{load_path}"
       Gem.find_files(load_path).each { |path|
-        if path.split("/")[-1] == "scaler_plugin.rb"
+        if path.split("/")[-1] == "abstract_controller_plugin.rb"
+          next
+        end
+        puts "Loading #{path}"
+        load path
+      }
+    end
+
+    def load_input_plugins
+      # Load plugins (see glob on next line)
+      load_path = File.join(File.dirname(__FILE__), "dynosaur", "inputs", "*_plugin.rb")
+      puts "Loading plugins from #{load_path}"
+      Gem.find_files(load_path).each { |path|
+        if path.split("/")[-1] == "abstract_input_plugin.rb"
           next
         end
         puts "Loading #{path}"
@@ -207,10 +138,10 @@ module Dynosaur
       if scaler_config.nil?
         raise "Please include a 'scaler' block in the config"
       end
-      @min_web_dynos = scaler_config.fetch("min_web_dynos", @min_web_dynos)
-      @max_web_dynos = scaler_config.fetch("max_web_dynos", @max_web_dynos)
+      # @min_web_dynos = scaler_config.fetch("min_web_dynos", @min_web_dynos)
+      # @max_web_dynos = scaler_config.fetch("max_web_dynos", @max_web_dynos)
       @dry_run = scaler_config.fetch("dry_run", @dry_run)
-      @stats = scaler_config.fetch("stats", @stats)
+      # @stats = scaler_config.fetch("stats", @stats)
       @interval = scaler_config.fetch("interval", @interval)
       @librato_api_key = scaler_config.fetch("librato_api_key", @librato_api_key)
       @librato_email = scaler_config.fetch("librato_email", @librato_email)
@@ -226,16 +157,16 @@ module Dynosaur
 
     # Take the plugin config and return a bunch of plugin instances
     # No magic, we just compare config['type'] to the plugin class name
-    def config_plugins(plugin_config)
-      @plugins = []
-      plugin_config.each { |config|
-        @plugins << config_one_plugin(config)
+    def config_controller_plugins(controller_plugins_config)
+      @controller_plugins = []
+      controller_plugins_config.each { |config|
+        @controller_plugins << config_one_plugin(config)
       }
-      return @plugins
+      return @controller_plugins
     end
 
     def config_one_plugin(config)
-      subclasses = ScalerPlugin.subclasses
+      subclasses = Dynosaur::Controllers::AbstractControllerPlugin.subclasses
       plugin = nil
       subclasses.each { |klass|
         if klass.name == config["type"]
@@ -250,46 +181,6 @@ module Dynosaur
       end
       return plugin
     end
-
-    def handle_stats(now, combined_estimate, before, after)
-      results = @last_results  # try to minimize race conditions in the iteration
-      stats = {
-        :plugins => results,
-        :ts => now,
-        :estimate => combined_estimate,
-        :before => before,
-        :after => after
-      }
-      if !@stats_callback.nil?
-        @stats_callback.call(stats)
-      end
-    end
-
-    # Built-in stats callback: librato
-    def librato_send(stats)
-      if @librato_api_key.nil? || @librato_api_key.empty? || @librato_email.nil? || @librato_email.empty?
-        puts "No librato api key and email"
-        return
-      end
-      begin
-        Librato::Metrics.authenticate(@librato_email, @librato_api_key)
-
-        metrics = {}
-        stats[:plugins].keys.sort.each { |name|
-          result = stats[:plugins][name]
-          metrics["dynosaur.#{@heroku_app_name}.#{name}.value"] = result["value"]
-          metrics["dynosaur.#{@heroku_app_name}.#{name}.estimate"] = result["estimate"]
-        }
-        metrics["dynosaur.#{@heroku_app_name}.combined.actual"] = stats[:after]
-        metrics["dynosaur.#{@heroku_app_name}.combined.estimate"] = stats[:estimate]
-
-        Librato::Metrics.submit(metrics)
-      rescue Exception => e
-        puts "Error sending librato metrics"
-        puts e.message
-      end
-    end
-
 
   end
 end

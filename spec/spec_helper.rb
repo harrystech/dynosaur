@@ -32,16 +32,20 @@ def get_config_with_test_plugin(num_plugins=1)
 
     }
   }
-  plugins = []
+  input_plugins = []
   num_plugins.times { |i|
-    plugins << {
+    input_plugins << {
       "name" => "random_#{i}",
-      "type" => "RandomPlugin",
+      "type" => "Dynosaur::Inputs::RandomPlugin",
       "seed" => 1234,
       "hysteresis_period" => 30
     }
   }
-  config["plugins"] = plugins
+  config["controller_plugins"] = [{
+    'name' => 'Random Plugin',
+    'type' => 'Dynosaur::Controllers::DynosControllerPlugin',
+    'input_plugins' => input_plugins,
+  }]
 
   return config
 end
