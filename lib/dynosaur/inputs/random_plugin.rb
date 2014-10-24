@@ -8,8 +8,8 @@ module Dynosaur
       attr_reader :seed
 
       # Load config from the config json object
-      def initialize(config)
-        super(config)
+      def initialize(config, controller)
+        super(config, controller)
         # stupid, kinda, but wanted to test plugin-specific options
         @seed = config["seed"].to_i # not even using it really
         @last =  45 + SecureRandom.random_number(10)

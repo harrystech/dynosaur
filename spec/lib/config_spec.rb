@@ -1,7 +1,5 @@
 require 'spec_helper'
 
-require 'dynosaur'
-
 describe "Loading plugins" do
   it "Should load plugin classes" do
     config = get_config_with_test_plugin(1)

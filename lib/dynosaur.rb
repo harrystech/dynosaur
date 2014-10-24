@@ -116,7 +116,7 @@ module Dynosaur
           next
         end
         puts "Loading #{path}"
-        load path
+        require path[0..-4]
       }
     end
 
@@ -129,7 +129,7 @@ module Dynosaur
           next
         end
         puts "Loading #{path}"
-        load path
+        require path[0..-4]
       }
     end
 
@@ -171,7 +171,7 @@ module Dynosaur
       subclasses.each { |klass|
         if klass.name == config["type"]
           puts "Instantiating #{klass.name} for config '#{config["name"]}'"
-          plugin = klass.new(config)
+          plugin = klass.new(config.merge("dry_run" => @dry_run))
           break
         end
       }

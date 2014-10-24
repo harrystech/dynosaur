@@ -1,4 +1,4 @@
-
+require 'spec_helper'
 
 describe "HerokuManager" do
   before do
@@ -32,12 +32,12 @@ describe "HerokuManager" do
     current.should eql 2
     manager.retrievals.should eql 1
 
-    manager.ensure(2)
+    manager.ensure_number_of_dynos(2)
     current = manager.get_current_dynos
     current.should eql 2
     manager.retrievals.should eql 2
 
-    manager.ensure(3)
+    manager.ensure_number_of_dynos(3)
     current = manager.get_current_dynos
     current.should eql 3
     manager.retrievals.should eql 3

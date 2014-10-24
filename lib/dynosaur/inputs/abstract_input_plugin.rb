@@ -5,19 +5,17 @@ module Dynosaur
   module Inputs
     class AbstractInputPlugin < Dynosaur::BasePlugin
 
-      DEFAULT_INTERVAL = 60
       DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
+      DEFAULT_INTERVAL = 60
 
-      attr_reader :name, :unit, :interval, :last_retrieved_ts, :retrievals, :recent
+      attr_reader :name, :unit, :last_retrieved_ts, :recent, :retrievals
 
-      def initialize(config)
+      def initialize(config, controller)
         super(config)
+        @controller = controller
         @unit = ""
         @value = nil
-        @interval = config.fetch("interval", DEFAULT_INTERVAL).to_f
-        hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
-        buffer_size = hysteresis_period / @interval  # num intervals to keep
-        @recent = RingBuffer.new(buffer_size)
+        @recent = RingBuffer.new(controller.buffer_size)
         @retrievals = 0
         @last_retrieved_ts = Time.at(0)
       end
@@ -27,8 +25,12 @@ module Dynosaur
       end
 
       def estimated_resources
-        # Should that go here on in InputPlugin
-        raise NotImplementedError.new("You must define estimated_resources in your controller")
+        self.get_value # force refresh if @interval has run out
+        recent_max = self.max_recent_values
+        if recent_max.nil?
+          return -1
+        end
+        return self.value_to_resources(recent_max) # call the implementation-specific conversion routine
       end
 
       def value_to_resources
@@ -38,7 +40,7 @@ module Dynosaur
 
       def get_value
         now = Time.now
-        if now > (@last_retrieved_ts + @interval)
+        if now > (@last_retrieved_ts + @controller.interval)
           begin
             @retrievals += 1
             @value = self.retrieve

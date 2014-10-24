@@ -4,6 +4,7 @@
 # loaded once.
 
 require 'pry'
+require 'dynosaur'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
@@ -23,8 +24,6 @@ def get_config_with_test_plugin(num_plugins=1)
   app_name = SecureRandom.uuid
   config = {
     "scaler" => {
-      "min_web_dynos" => 3,
-      "max_web_dynos" => 27,
       "heroku_api_key" => api_key,
       "heroku_app_name" => app_name,
       "dry_run" => true,
@@ -38,13 +37,15 @@ def get_config_with_test_plugin(num_plugins=1)
       "name" => "random_#{i}",
       "type" => "Dynosaur::Inputs::RandomPlugin",
       "seed" => 1234,
-      "hysteresis_period" => 30
+      "hysteresis_period" => 30,
     }
   }
   config["controller_plugins"] = [{
     'name' => 'Random Plugin',
     'type' => 'Dynosaur::Controllers::DynosControllerPlugin',
     'input_plugins' => input_plugins,
+    "min_web_dynos" => 3,
+    "max_web_dynos" => 27,
   }]
 
   return config

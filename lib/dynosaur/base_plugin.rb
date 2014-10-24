@@ -1,5 +1,8 @@
 module Dynosaur
   class BasePlugin
+
+    attr_reader :name
+
     # Requires Ruby 1.9
     # http://stackoverflow.com/questions/436159/how-to-get-all-subclasses
     def self.subclasses
