@@ -3,18 +3,12 @@ module Dynosaur
   module Controllers
     class AbstractControllerPlugin < Dynosaur::BasePlugin
 
-      DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
-      DEFAULT_INTERVAL = 60
-
-      attr_reader :input_plugins, :interval, :current_estimate, :current, :dry_run, :buffer_size
+      attr_reader :input_plugins, :current_estimate, :current, :dry_run
 
       def initialize(config)
         super(config)
 
         @value = nil
-        @interval = config.fetch("interval", DEFAULT_INTERVAL).to_f
-        hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
-        @buffer_size = hysteresis_period / @interval  # num intervals to keep
         # State variables
         @stopped = false
         @current_estimate = 0
@@ -35,7 +29,7 @@ module Dynosaur
         # Load the class and instanciate it
         begin
           klass = Kernel.const_get(input_plugin_config['type'])
-          return klass.new(input_plugin_config, self)
+          return klass.new(input_plugin_config)
         rescue NameError => e
           raise "Could not load #{input_plugin_config['type']}, #{e.message}"
         end
@@ -55,7 +49,7 @@ module Dynosaur
           value = plugin.get_value
           estimate = plugin.estimated_resources  # minor race condition, but only matters for logging
           health = "OK"
-          if now - plugin.last_retrieved_ts > interval
+          if now - plugin.last_retrieved_ts > plugin.interval
             health = "STALE"
           end
           details[plugin.name] = {

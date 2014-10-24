@@ -3,11 +3,11 @@ require 'spec_helper'
 describe "Input Plugins" do
   it "should retrieve and cache value properly" do
     config = get_config_with_test_plugin
-    config["controller_plugins"][0]["interval"] = 30
+    config["controller_plugins"][0]['input_plugins'][0]['interval'] = 30
     Dynosaur.initialize(config)
     dyno_controller = Dynosaur.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
-    dyno_controller.interval.should eql 30.0
+    rand.interval.should eql 30.0
 
     # Retrieve the get_value again before cache times out
     ret0 = rand.retrievals
@@ -22,11 +22,11 @@ describe "Input Plugins" do
 
   it "should retrieve and re-retrieve value properly" do
     config = get_config_with_test_plugin
-    config["controller_plugins"][0]["interval"] = 0.1
+    config["controller_plugins"][0]['input_plugins'][0]['interval'] = 0.1
     Dynosaur.initialize(config)
     dyno_controller = Dynosaur.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
-    dyno_controller.interval.should eql 0.1
+    rand.interval.should eql 0.1
 
     # retrieve then wait for cache to expire and re-retrieve
     ret0 = rand.retrievals
@@ -53,12 +53,12 @@ describe "Input Plugins" do
 
   it "should handle hysteresis properly" do
     config = get_config_with_test_plugin
-    config["controller_plugins"][0]["interval"] = 0.05
+    config["controller_plugins"][0]['input_plugins'][0]['interval'] = 0.05
     config["controller_plugins"][0]["hysteresis_period"] = 0.05*5
     Dynosaur.initialize(config)
     dyno_controller = Dynosaur.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
-    dyno_controller.interval.should eql 0.05
+    rand.interval.should eql 0.05
 
     val = rand.get_value()
     dynos = rand.estimated_resources

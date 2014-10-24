@@ -5,16 +5,21 @@ module Dynosaur
   module Inputs
     class AbstractInputPlugin < Dynosaur::BasePlugin
 
-      attr_reader :name, :unit, :last_retrieved_ts, :recent, :retrievals
+      DEFAULT_INTERVAL = 60
+      DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
 
-      def initialize(config, controller)
+      attr_reader :name, :unit, :last_retrieved_ts, :recent, :retrievals, :buffer_size, :interval
+
+      def initialize(config)
         super(config)
-        @controller = controller
         @unit = ""
         @value = nil
-        @recent = RingBuffer.new(controller.buffer_size)
         @retrievals = 0
         @last_retrieved_ts = Time.at(0)
+        @interval = config.fetch("interval", DEFAULT_INTERVAL).to_f
+        hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
+        @buffer_size = hysteresis_period / @interval  # num intervals to keep
+        @recent = RingBuffer.new(@buffer_size)
       end
 
       def retrieve
@@ -37,7 +42,7 @@ module Dynosaur
 
       def get_value
         now = Time.now
-        if now > (@last_retrieved_ts + @controller.interval)
+        if now > (@last_retrieved_ts + @interval)
           begin
             @retrievals += 1
             @value = self.retrieve
