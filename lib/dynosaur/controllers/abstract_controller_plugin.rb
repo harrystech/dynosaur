@@ -6,8 +6,7 @@ module Dynosaur
       DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
       DEFAULT_INTERVAL = 60
 
-      attr_reader :input_plugins, :interval, :current_estimate, :current,
-        :dry_run, :buffer_size
+      attr_reader :input_plugins, :interval, :current_estimate, :current, :dry_run, :buffer_size
 
       def initialize(config)
         super(config)

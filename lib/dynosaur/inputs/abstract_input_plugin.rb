@@ -5,9 +5,6 @@ module Dynosaur
   module Inputs
     class AbstractInputPlugin < Dynosaur::BasePlugin
 
-      DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
-      DEFAULT_INTERVAL = 60
-
       attr_reader :name, :unit, :last_retrieved_ts, :recent, :retrievals
 
       def initialize(config, controller)
