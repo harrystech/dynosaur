@@ -4,40 +4,40 @@ dynosaur:
       -
         name: "rediscloud:25"
         max_memory: 25
-        connections: 10
+        max_connections: 10
       -
         name: "rediscloud:100"
         max_memory: 100
-        connections: 256
+        max_connections: 256
       -
         name: "rediscloud:250"
         max_memory: 250
-        connections: 250
+        max_connections: 256
       -
         name: "rediscloud:500"
         max_memory: 500
-        connections: 512
+        max_connections: 512
       -
         name: "rediscloud:1000"
         max_memory: 1000
-        connections: 1024
+        max_connections: 1024
       -
         name: "rediscloud:2500"
         max_memory: 2500
-        connections: 0
+        max_connections:
       -
         name: "rediscloud:5000"
         max_memory: 5000
-        connections: 0
+        max_connections:
       -
         name: "rediscloud:10000"
         max_memory: 10000
-        connections: 0
+        max_connections:
       -
         name: "rediscloud:25000"
         max_memory: 25000
-        connections: 0
+        max_connections:
       -
         name: "rediscloud:50000"
         max_memory: 50000
-        connections: 0
+        max_connections:

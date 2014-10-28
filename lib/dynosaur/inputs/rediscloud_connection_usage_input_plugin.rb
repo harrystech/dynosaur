@@ -2,18 +2,14 @@ require 'dynosaur/new_relic_api_client'
 
 module Dynosaur
   module Inputs
-    class RediscloudMemoryUsageInputPlugin < AbstractInputPlugin
+    class RediscloudConnectionUsageInputPlugin < AbstractInputPlugin
 
       def initialize(config)
         super(config)
-        @unit = "memory usage (megabytes)"
+        @unit = "number of active connections"
         @min_percentage_threshold = 10.0
         @max_percentage_threshold = 90.0
-        @metric_name = "Component/redis/Used Memory[megabytes]"
-        if @interval < 60
-          puts "New Relic API returns 500 if we ask for data for a window shorter than 60s, increasing interval to 60s"
-          @interval = 60.0
-        end
+        @metric_name = "Component/redis/Connections[connections]"
 
         # Get the list at https://api.newrelic.com/v2/components.json
         component_id = config['component_id'] # Some internal New Relic id
@@ -21,33 +17,26 @@ module Dynosaur
       end
 
       def retrieve
-        return get_memory_usage
+        return get_number_of_connections
       end
 
       def value_to_resources(value)
-        return AddonPlan.new(suitable_plans(value).first, 'max_memory')
+        return AddonPlan.new(suitable_plans(value).first, 'max_connections')
       end
 
       private
 
-      def get_memory_usage
+      def get_number_of_connections
         now = Time.now.utc
         return @new_relic_api_client.get_metric(@metric_name, from: (now - interval).iso8601, to: now.iso8601)
       end
 
-      def faraday_connection
-        base_url = "https://api.newrelic.com"
-        conn = Faraday.new(:url => base_url) do |faraday|
-          faraday.request :url_encoded
-          faraday.response :logger
-          faraday.adapter  Faraday.default_adapter
-        end
-      end
 
       def suitable_plans(value)
         return plans.select{ |plan|
-          plan["max_memory"] * (@max_percentage_threshold / 100) > value
+          plan['max_connections'].nil? || (plan["max_connections"] * (@max_percentage_threshold / 100) > value)
         }.sort_by{ |plan|
+          # Order by memory as high plans don't have a connections value
           plan['max_memory']
         }
       end
