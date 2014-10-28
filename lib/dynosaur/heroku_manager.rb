@@ -1,5 +1,6 @@
 
 require 'heroku-api'
+require 'platform-api'
 require 'dynosaur/error_handler'
 
 class HerokuManager
@@ -13,7 +14,10 @@ class HerokuManager
     @current_dynos = 0
     @last_retrieved_ts = nil
     @retrievals = 0
+
+    # TODO: We should migrate entirely to the platform API
     @heroku = Heroku::API.new(:api_key => @api_key)
+    @heroku_platform_api = heroku = PlatformAPI.connect_oauth(@api_key)
   end
 
   def get_current_dynos
@@ -57,6 +61,18 @@ class HerokuManager
       set(dynos)
     else
       puts "Current dynos already at #{dynos}"
+    end
+  end
+
+  def upgrade_addon(addon_name, plan_name)
+    plan_list = heroku.plan.list('rediscloud')
+    current_plan_id = heroku.addon.list(@app_name).find { |addon| addon['name'] == addon_name }['plan']['id']
+    if current_plan_id.nil?
+      raise "Addon: #{addon_name} is not provionned on app : #{@app_name}"
+    end
+    new_plan_id = plan_list.find { |plan| plan['name'] == plan_name }['id']
+    if current_plan_id != new_plan_id
+      @heroku_platform_api.addon.update(@app_name, addon_name, {plan: new_plan_id})
     end
   end
 

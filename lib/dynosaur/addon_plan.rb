@@ -3,11 +3,11 @@
 # input plugins
 #
 class AddonPlan
-  # include Comparable
+  include Comparable
 
   attr_reader :data, :value_field
 
-  def initialize(data, value_field)
+  def initialize(data, value_field = nil)
     @data = data
     @value_field = value_field
   end

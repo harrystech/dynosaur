@@ -50,26 +50,26 @@ describe "scaler" do
       combined.should eql 17  # 33 / 2 rounded up
     end
 
-    it "should obey max_web_dynos" do
-      # Check that we are constrained by max_web_dynos
+    it "should obey max_resource" do
+      # Check that we are constrained by max_resource
       dyno_controller = Dynosaur.controller_plugins[0]
-      dyno_controller.input_plugins[0].stub(:retrieve) { @config["controller_plugins"][0]["max_web_dynos"]*4 }
+      dyno_controller.input_plugins[0].stub(:retrieve) { @config["controller_plugins"][0]["max_resource"]*4 }
       dyno_controller.input_plugins[1].stub(:retrieve) { 27 }
       combined, details = dyno_controller.get_combined_estimate
       puts "#{combined} - #{details}"
-      combined.should eql @config["controller_plugins"][0]["max_web_dynos"]
+      combined.should eql @config["controller_plugins"][0]["max_resource"]
     end
 
 
-    it "should obey min_web_dynos" do
-      # Check that we are constrained by min_web_dynos
+    it "should obey min_resource" do
+      # Check that we are constrained by min_resource
 
       dyno_controller = Dynosaur.controller_plugins[0]
       dyno_controller.input_plugins[0].stub(:retrieve) { 0 }
       dyno_controller.input_plugins[1].stub(:retrieve) { 1 }
       combined, details = dyno_controller.get_combined_estimate
       puts "#{combined} - #{details}"
-      combined.should eql @config["controller_plugins"][0]["min_web_dynos"]
+      combined.should eql @config["controller_plugins"][0]["min_resource"]
     end
   end
 

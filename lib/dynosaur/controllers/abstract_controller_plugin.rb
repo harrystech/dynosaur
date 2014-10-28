@@ -68,8 +68,8 @@ module Dynosaur
         # Combine the estimates and mo
         combined_estimate = estimates.max
 
-        combined_estimate = [@max_web_dynos, combined_estimate].min
-        combined_estimate = [@min_web_dynos, combined_estimate].max
+        combined_estimate = [@max_resource, combined_estimate].min
+        combined_estimate = [@min_resource, combined_estimate].max
 
         return combined_estimate
       end

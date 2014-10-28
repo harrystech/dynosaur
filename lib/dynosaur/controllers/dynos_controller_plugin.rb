@@ -5,12 +5,12 @@ module Dynosaur
       DEFAULT_MIN_WEB_DYNOS = 2
       DEFAULT_MAX_WEB_DYNOS = 100
 
-      attr_reader :min_web_dynos, :max_web_dynos
+      attr_reader :min_resource, :max_resource
 
       def initialize(config)
         super(config)
-        @min_web_dynos = config.fetch('min_web_dynos', DEFAULT_MIN_WEB_DYNOS)
-        @max_web_dynos = config.fetch('max_web_dynos', DEFAULT_MAX_WEB_DYNOS)
+        @min_resource = config.fetch('min_resource', DEFAULT_MIN_WEB_DYNOS)
+        @max_resource = config.fetch('max_resource', DEFAULT_MAX_WEB_DYNOS)
       end
 
       def scale

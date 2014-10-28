@@ -43,9 +43,34 @@ def get_config_with_test_plugin(num_plugins=1)
     'name' => 'Random Plugin',
     'type' => 'Dynosaur::Controllers::DynosControllerPlugin',
     'input_plugins' => input_plugins,
-    "min_web_dynos" => 3,
-    "max_web_dynos" => 27,
+    "min_resource" => 3,
+    "max_resource" => 27,
   }]
 
   return config
 end
+
+def stub_redis_memory_usage(fake_value, component_id: 42)
+  fake_response = {
+    "metric_data"=>{
+      "from"=>"2014-10-28T14:06:43+00:00",
+      "to"=>"2014-10-28T14:36:43+00:00",
+      "metrics"=>[{
+        "name"=>"Component/redis/Used memory[megabytes]",
+        "timeslices"=>[{
+          "from"=>"2014-10-28T14:06:00+00:00",
+          "to"=>"2014-10-28T14:35:59+00:00",
+          "values"=>{"average_value"=>fake_value}
+        }]
+      }]
+    }
+  }
+  stubs = Faraday::Adapter::Test::Stubs.new
+  test_connection = Faraday.new do |builder|
+    builder.adapter :test, stubs do |stub|
+      stub.post("/v2/components/#{component_id}/metrics/data.json") { |env| [ 200, {}, fake_response.to_json ]}
+    end
+  end
+  allow_any_instance_of(Dynosaur::Inputs::RediscloudMemoryUsageInputPlugin).to receive(:faraday_connection).and_return(test_connection)
+end
+

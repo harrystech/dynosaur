@@ -4,13 +4,12 @@ module Dynosaur
 
       def initialize(config)
         super(config)
-        # ...
+        @min_resource = config.fetch('min_resource', Dynosaur::Addons.plans_for_addon('rediscloud', 'max_memory').first)
+        @max_resource = config.fetch('max_resource', Dynosaur::Addons.plans_for_addon('rediscloud', 'max_memory').last)
       end
 
       def scale
-        # Use heroku platform api to switch plan
-        # @current_estimate is the plan
-        # @current_estimate
+        @heroku_manager.upgrade_addon('rediscloud', @current_estimate['name'])
       end
 
     end

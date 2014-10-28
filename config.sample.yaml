@@ -8,14 +8,14 @@ scaler:
 controller_plugins:
     -
         name: redis cloud
-        type: Dynosaur::Controllers::RedisCloudControllerPlugin
+        type: Dynosaur::Controllers::RediscloudControllerPlugin
         input_plugins:
             -
                 name: Redis Cloud Connection Input Plugin
-                type: Dynosaur::InputPlugin::RedisCloudConnectionInputPlugin
+                type: Dynosaur::Inputs::RediscloudConnectionInputPlugin
             -
                 name: Redis Cloud Memory Usage Input Plugin
-                type: Dynosaur::InputPlugin::RedisCloudConnectionInputPlugin
+                type: Dynosaur::Inputs::RediscloudConnectionInputPlugin
     -
         name: dynos controller
         type: Dynosaur::Controllers::DynosControllerPlugin
