@@ -17,6 +17,10 @@ module Dynosaur
         @heroku_manager.ensure_number_of_dynos(@current_estimate)
       end
 
+      def get_current_resource
+        heroku_manager.get_current_dynos
+      end
+
     end # DynosControllerPlugin
   end # Controllers
 end # Dynosaur

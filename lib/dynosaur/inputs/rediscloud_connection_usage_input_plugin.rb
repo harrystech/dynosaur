@@ -36,7 +36,7 @@ module Dynosaur
         return plans.select{ |plan|
           plan['max_connections'].nil? || (plan["max_connections"] * (@max_percentage_threshold / 100) > value)
         }.sort_by{ |plan|
-          # Order by memory as high plans don't have a connections value
+          # Order by memory as expensive plans don't have a connections value
           plan['max_memory']
         }
       end

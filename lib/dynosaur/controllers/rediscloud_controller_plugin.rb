@@ -9,7 +9,11 @@ module Dynosaur
       end
 
       def scale
-        @heroku_manager.upgrade_addon('rediscloud', @current_estimate['name'])
+        heroku_manager.upgrade_addon('rediscloud', @current_estimate['name'])
+      end
+
+      def get_current_resource
+        heroku_manager.get_current_plan('rediscloud')
       end
 
     end

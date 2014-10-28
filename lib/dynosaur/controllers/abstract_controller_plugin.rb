@@ -104,16 +104,20 @@ module Dynosaur
         raise NotImplementedError.new("You must define scale in your controller")
       end
 
+      def get_current_resource
+        raise NotImplementedError.new("You must define get_current_resource in your controller")
+      end
+
       def run
         now = Time.now
 
-        before = heroku_manager.get_current_dynos
+        before = get_current_resource
         @current_estimate = get_combined_estimate
 
         if @current_estimate != before
           scale
         end
-        after = heroku_manager.get_current_dynos
+        after = get_current_resource
 
         if before != after
           puts "CHANGE: #{before} => #{after}"
