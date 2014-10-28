@@ -30,12 +30,12 @@ module Dynosaur
         self.get_value # force refresh if @interval has run out
         recent_max = self.max_recent_values
         if recent_max.nil?
-          return -1
+          return -1 # TODO: Might want to return nil here as not all values are int or we might want to let the implementation of value_to_resources handle the nil value
         end
         return self.value_to_resources(recent_max) # call the implementation-specific conversion routine
       end
 
-      def value_to_resources
+      def value_to_resources(value)
         # Should that go here on in InputPlugin
         raise NotImplementedError.new("You must define value_to_resources in your controller")
       end

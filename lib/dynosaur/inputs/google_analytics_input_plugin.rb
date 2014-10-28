@@ -56,7 +56,7 @@ module Dynosaur
         return get_active_users
       end
 
-      def value_to_dynos(value)
+      def value_to_resources(value)
         return (value / @users_per_dyno.to_f).ceil
       end
 
@@ -134,5 +134,5 @@ module Dynosaur
         return active
       end
     end
-  end
-end
+  end # Inputs
+end # Dynosaur

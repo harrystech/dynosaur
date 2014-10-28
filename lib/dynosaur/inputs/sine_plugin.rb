@@ -23,7 +23,7 @@ module Dynosaur
         return v.ceil
       end
 
-      def value_to_dynos(value)
+      def value_to_resources(value)
         estimate = (value/10.0).ceil
         puts "SINE: #{@recent} => #{value} : #{estimate}"
         return estimate
