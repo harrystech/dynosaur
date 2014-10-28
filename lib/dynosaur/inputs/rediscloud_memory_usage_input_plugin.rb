@@ -26,12 +26,15 @@ module Dynosaur
 
       def get_memory_usage
         api_path = "/v2/components/#{@component_id}/metrics/data.json"
+        now = Time.now.utc
         response = faraday_connection.post(api_path) do |req|
           req.headers['X-Api-Key'] = @new_relic_api_key
           req.body = {
             'names[]' => "Component/redis/Used memory[megabytes]",
             'values[]' => 'average_value',
             'summarize' => true,
+            'from' => (now - interval).iso8601,
+            'to' => now.iso8601,
           }
         end
         response_data = JSON.parse(response.body)
