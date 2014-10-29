@@ -65,19 +65,19 @@ class HerokuManager
   end
 
   def upgrade_addon(addon_name, plan_name)
-    plan_list = heroku.plan.list('rediscloud')
-    current_plan = get_current_plan
-    if current_plan.id.nil?
+    plan_list = @heroku_platform_api.plan.list('rediscloud')
+    current_plan = get_current_plan(addon_name)
+    if current_plan['id'].nil?
       raise "Addon: #{addon_name} is not provisionned on app : #{@app_name}"
     end
     new_plan_id = plan_list.find { |plan| plan['name'] == plan_name }['id']
-    if current_plan.id != new_plan_id
+    if current_plan['id'] != new_plan_id
       @heroku_platform_api.addon.update(@app_name, addon_name, {plan: new_plan_id})
     end
   end
 
   def get_current_plan(addon_name)
-    addons = heroku.addon.list(@app_name)
+    addons = @heroku_platform_api.addon.list(@app_name)
     return addons.find { |addon| addon['name'] == addon_name }['plan']
   end
 

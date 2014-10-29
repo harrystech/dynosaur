@@ -44,7 +44,7 @@ describe Dynosaur::Controllers::RediscloudControllerPlugin do
       before do
         input_plugin = controller_plugin.input_plugins[0]
         input_plugin.instance_variable_set(:@interval, 0)
-        rediscloud_250 = AddonPlan.new(Dynosaur::Addons.all['rediscloud'].find{|plan| plan['name'] == 'rediscloud:250'}, 'max_memory')
+        rediscloud_250 = AddonPlan.new(Dynosaur::Addons.all['rediscloud'].find{|plan| plan['name'] == 'rediscloud:250'})
         controller_plugin.instance_variable_set(:@max_resource, rediscloud_250)
       end
       it "returns the max estimated" do
@@ -59,7 +59,7 @@ describe Dynosaur::Controllers::RediscloudControllerPlugin do
       before do
         input_plugin = controller_plugin.input_plugins[0]
         input_plugin.instance_variable_set(:@interval, 0)
-        rediscloud_250 = AddonPlan.new(Dynosaur::Addons.all['rediscloud'].find{|plan| plan['name'] == 'rediscloud:250'}, 'max_memory')
+        rediscloud_250 = AddonPlan.new(Dynosaur::Addons.all['rediscloud'].find{|plan| plan['name'] == 'rediscloud:250'})
         controller_plugin.instance_variable_set(:@min_resource, rediscloud_250)
       end
       it "returns the max estimated" do

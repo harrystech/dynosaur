@@ -172,7 +172,11 @@ module Dynosaur
       subclasses.each { |klass|
         if klass.name == config["type"]
           puts "Instantiating #{klass.name} for config '#{config["name"]}'"
-          plugin = klass.new(config.merge("dry_run" => @dry_run))
+          plugin = klass.new(config.merge({
+            "dry_run" => @dry_run,
+            "heroku_app_name" => @heroku_app_name,
+            "heroku_api_key" => @heroku_api_key,
+          }))
           break
         end
       }
@@ -203,7 +207,7 @@ module Dynosaur
       #
       # @params compare_field Field used to compare plans
       #
-      def plans_for_addon(addon, compare_field)
+      def plans_for_addon(addon, compare_field = 'tier')
         return all['rediscloud'].map { |plan|
           AddonPlan.new(plan, compare_field)
         }

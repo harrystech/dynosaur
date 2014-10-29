@@ -5,18 +5,22 @@
 class AddonPlan
   include Comparable
 
-  attr_reader :data, :value_field
+  attr_reader :data, :compar_field
 
-  def initialize(data, value_field = nil)
+  def initialize(data, compar_field = 'tier')
     @data = data
-    @value_field = value_field
+    @compar_field = compar_field
   end
 
   def <=>(anOther)
-    return data[value_field] <=> anOther[value_field]
+    return data[compar_field] <=> anOther[compar_field]
   end
 
   def [](key)
     return @data[key]
+  end
+
+  def to_s
+    return data['name']
   end
 end

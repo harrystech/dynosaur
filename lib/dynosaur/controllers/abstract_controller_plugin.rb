@@ -13,6 +13,8 @@ module Dynosaur
         @stopped = false
         @current_estimate = 0
         @current = 0
+        @heroku_app_name = config['heroku_app_name']
+        @heroku_api_key = config['heroku_api_key']
         @dry_run = config.fetch("dry_run", false)
 
         load_input_plugins config['input_plugins']

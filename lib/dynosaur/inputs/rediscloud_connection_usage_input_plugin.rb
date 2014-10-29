@@ -1,4 +1,5 @@
 require 'dynosaur/new_relic_api_client'
+require 'time'
 
 module Dynosaur
   module Inputs
@@ -21,7 +22,7 @@ module Dynosaur
       end
 
       def value_to_resources(value)
-        return AddonPlan.new(suitable_plans(value).first, 'max_connections')
+        return AddonPlan.new(suitable_plans(value).first)
       end
 
       private

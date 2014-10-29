@@ -1,4 +1,5 @@
 require 'dynosaur/new_relic_api_client'
+require 'time'
 
 module Dynosaur
   module Inputs
@@ -9,7 +10,7 @@ module Dynosaur
         @unit = "memory usage (megabytes)"
         @min_percentage_threshold = 10.0
         @max_percentage_threshold = 90.0
-        @metric_name = "Component/redis/Used Memory[megabytes]"
+        @metric_name = "Component/redis/Used memory[megabytes]"
         if @interval < 60
           puts "New Relic API returns 500 if we ask for data for a window shorter than 60s, increasing interval to 60s"
           @interval = 60.0
@@ -25,7 +26,7 @@ module Dynosaur
       end
 
       def value_to_resources(value)
-        return AddonPlan.new(suitable_plans(value).first, 'max_memory')
+        return AddonPlan.new(suitable_plans(value).first)
       end
 
       private
