@@ -7,7 +7,7 @@ module Dynosaur
       def initialize(config)
         super(config)
         @unit = "memory usage (megabytes)"
-        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0)
+        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0).to_f
         @metric_name = "Component/redis/Used memory[megabytes]"
 
         # Get the list at https://api.newrelic.com/v2/components.json

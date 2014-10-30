@@ -8,7 +8,7 @@ module Dynosaur
       def initialize(config)
         super(config)
         @unit = "log volume (bytes)"
-        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0)
+        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0).to_f
 
         # By far not the most memory efficient strategy as the log volumen will
         # always increase during the day we don't need all the historical data
