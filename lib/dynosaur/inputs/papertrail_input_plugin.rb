@@ -34,7 +34,7 @@ module Dynosaur
       end
 
       def value_to_resources(value)
-        return AddonPlan.new(suitable_plans(value).first)
+        return suitable_plans(value).first
       end
 
       def self.get_config_template

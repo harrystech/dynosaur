@@ -21,13 +21,12 @@ module Dynosaur
       end
 
       def value_to_resources(value)
-        return AddonPlan.new(suitable_plans(value).first)
+        return suitable_plans(value).first
       end
 
       def self.get_config_template
         {
           "max_percentage_threshold" => ["text"],
-          "metric_name" => ["text"],
           "component_id" => ["text"],
           "new_relic_api_key" => ["text"],
         }
