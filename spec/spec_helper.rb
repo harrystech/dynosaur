@@ -82,4 +82,20 @@ def stub_new_relic_metric(metric_name, fake_value, component_id)
   allow_any_instance_of(Dynosaur::NewRelicApiClient).to receive(:faraday_connection).and_return(test_connection)
 end
 
+def stub_papertrail_api(usage)
+  fake_response = {
+    "log_data_transfer_used"=>usage,
+    "log_data_transfer_used_percent"=>25.801992416381836, # we never read that
+    "log_data_transfer_plan_limit"=>10485760, # we never read that
+    "log_data_transfer_hard_limit"=>10485760, # we never read that
+  }
+  stubs = Faraday::Adapter::Test::Stubs.new
+  test_connection = Faraday.new do |builder|
+    builder.adapter :test, stubs do |stub|
+      stub.get("/api/v1/accounts") { |env| [ 200, {}, fake_response.to_json ]}
+    end
+  end
+  allow_any_instance_of(Dynosaur::PapertrailApiClient).to receive(:faraday_connection).and_return(test_connection)
+end
+
 

@@ -1,5 +1,4 @@
 require 'dynosaur/new_relic_api_client'
-require 'time'
 
 module Dynosaur
   module Inputs

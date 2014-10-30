@@ -29,7 +29,7 @@ module Dynosaur
     end
 
     def get_plan_id(value)
-      plan_list = @heroku_platform_api.plan.list('rediscloud')
+      plan_list = @heroku_platform_api.plan.list(@addon_name)
       return plan_list.find { |plan| plan['name'] == value }['id']
     end
 

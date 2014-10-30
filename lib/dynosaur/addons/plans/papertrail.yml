@@ -1,0 +1,47 @@
+dynosaur:
+  addons:
+    papertrail:
+      -
+        name: papertrail:choklad
+        max_log_volume: 10485760 # 10MB
+        tier: 1
+      -
+        name: papertrail:fixa
+        max_log_volume: 52428800 # 50MB
+        tier: 2
+      -
+        name: papertrail:ludvig
+        max_log_volume: 104857600 # 100MB
+        tier: 3
+      -
+        name: papertrail:forsta
+        max_log_volume: 209715200 # 200MB
+        tier: 4
+      -
+        name: papertrail:volmar
+        max_log_volume: 524288000 # 500MB
+        tier: 5
+      -
+        name: papertrail:liatorp
+        max_log_volume: 1073741824 # 1 GB
+        tier: 6
+      -
+        name: papertrail:fredrik
+        max_log_volume: 5368709120 # 5GB
+        tier: 7
+      -
+        name: papertrail:numerar
+        max_log_volume: 10737418240 # 10GB
+        tier: 8
+      -
+        name: papertrail:galant
+        max_log_volume: 10737418240 # 10GB
+        tier: 9
+      -
+        name: papertrail:sparsam
+        max_log_volume: 21474836480 # 20 GB
+        tier: 10
+      -
+        name: papertrail:grundtal
+        max_log_volume: 21474836480 # 20 GB
+        tier: 11

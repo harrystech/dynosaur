@@ -239,7 +239,7 @@ module Dynosaur
       # @params compare_field Field used to compare plans
       #
       def plans_for_addon(addon, compare_field = 'tier')
-        return all['rediscloud'].map { |plan|
+        return all[addon].map { |plan|
           AddonPlan.new(plan, compare_field)
         }
       end
