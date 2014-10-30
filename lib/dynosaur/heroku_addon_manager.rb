@@ -9,7 +9,7 @@ module Dynosaur
     end
 
     def retrieve
-      return get_current_plan
+      return get_current_plan['name']
     end
 
     def set(value)

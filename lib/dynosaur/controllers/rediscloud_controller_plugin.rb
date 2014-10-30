@@ -4,12 +4,14 @@ module Dynosaur
 
       def initialize(config)
         super(config)
-        @min_resource = config.fetch('min_resource', Dynosaur::Addons.plans_for_addon('rediscloud').first)
-        @max_resource = config.fetch('max_resource', Dynosaur::Addons.plans_for_addon('rediscloud').last)
+        min_resource_name = config.fetch('min_resource', Dynosaur::Addons.all['rediscloud'].first['name'])
+        max_resource_name = config.fetch('max_resource', Dynosaur::Addons.all['rediscloud'].last['name'])
+        @min_resource = AddonPlan.new(Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == min_resource_name })
+        @max_resource = AddonPlan.new(Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == max_resource_name })
       end
 
       def scale
-        heroku_manager.upgrade_addon(@current_estimate['name'])
+        heroku_manager.ensure_value(@current_estimate['name'])
       end
 
       def get_current_resource

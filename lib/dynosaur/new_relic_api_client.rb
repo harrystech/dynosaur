@@ -1,3 +1,5 @@
+require 'time'
+
 module Dynosaur
   class NewRelicApiClient
     def initialize(api_key, component_id)
@@ -9,13 +11,19 @@ module Dynosaur
       base_url = "https://api.newrelic.com"
       conn = Faraday.new(:url => base_url) do |faraday|
         faraday.request :url_encoded
+        if Dynosaur.debug
+          faraday.response :logger
+        end
         faraday.adapter  Faraday.default_adapter
       end
     end
 
-    def get_metric(metric_name, from: (Time.now - 60), to: Time.now)
+    #
+    # It seems like New Relic tends to return 0 if the time window is too small,
+    # so default to 10 minutes
+    #
+    def get_metric(metric_name, from: (Time.now.utc - (60 * 10)).iso8601, to: Time.now.utc.iso8601)
       api_path = "/v2/components/#{@component_id}/metrics/data.json"
-      now = Time.now.utc
       response = faraday_connection.post(api_path) do |req|
         req.headers['X-Api-Key'] = @api_key
         req.body = {

@@ -28,8 +28,7 @@ module Dynosaur
       private
 
       def get_number_of_connections
-        now = Time.now.utc
-        return @new_relic_api_client.get_metric(@metric_name, from: (now - interval).iso8601, to: now.iso8601)
+        return @new_relic_api_client.get_metric(@metric_name)
       end
 
 

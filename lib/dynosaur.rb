@@ -19,7 +19,7 @@ module Dynosaur
   class << self
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
 
-    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins
+    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins, :debug
 
     def initialize(config)
       puts "Dynosaur version #{Dynosaur::VERSION} initializing"
@@ -27,6 +27,7 @@ module Dynosaur
       # Config defaults
       @dry_run = false
       @stats = false
+      @debug = false
       @interval = DEFAULT_SCALER_INTERVAL
       @heroku_api_key = nil
       @heroku_app_name = nil

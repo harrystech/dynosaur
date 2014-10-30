@@ -11,10 +11,6 @@ module Dynosaur
         @min_percentage_threshold = 10.0
         @max_percentage_threshold = 90.0
         @metric_name = "Component/redis/Used memory[megabytes]"
-        if @interval < 60
-          puts "New Relic API returns 500 if we ask for data for a window shorter than 60s, increasing interval to 60s"
-          @interval = 60.0
-        end
 
         # Get the list at https://api.newrelic.com/v2/components.json
         component_id = config['component_id'] # Some internal New Relic id
@@ -32,17 +28,7 @@ module Dynosaur
       private
 
       def get_memory_usage
-        now = Time.now.utc
-        return @new_relic_api_client.get_metric(@metric_name, from: (now - interval).iso8601, to: now.iso8601)
-      end
-
-      def faraday_connection
-        base_url = "https://api.newrelic.com"
-        conn = Faraday.new(:url => base_url) do |faraday|
-          faraday.request :url_encoded
-          faraday.response :logger
-          faraday.adapter  Faraday.default_adapter
-        end
+        return @new_relic_api_client.get_metric(@metric_name)
       end
 
       def suitable_plans(value)
