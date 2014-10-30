@@ -110,8 +110,6 @@ module Dynosaur
       end
 
       def get_active_users
-
-
         active = -1
         begin
           authorize
