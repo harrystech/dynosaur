@@ -172,8 +172,12 @@ module Dynosaur
       subclasses.each { |klass|
         if klass.name == config["type"]
           puts "Instantiating #{klass.name} for config '#{config["name"]}'"
+          if @dry_run
+            # Dry run is set globally
+            # if it's not set globally, let each controller have its own dry run setting
+            config.merge!({"dry_run" => true})
+          end
           plugin = klass.new(config.merge({
-            "dry_run" => @dry_run,
             "heroku_app_name" => @heroku_app_name,
             "heroku_api_key" => @heroku_api_key,
           }))
