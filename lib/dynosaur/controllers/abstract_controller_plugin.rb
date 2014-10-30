@@ -38,6 +38,7 @@ module Dynosaur
       end
 
       def heroku_manager
+        raise NotImplementedError.new("You must define heroku_manager in your controller")
       end
 
       def get_combined_estimate
