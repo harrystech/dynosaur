@@ -7,8 +7,7 @@ module Dynosaur
       def initialize(config)
         super(config)
         @unit = "memory usage (megabytes)"
-        @min_percentage_threshold = 10.0
-        @max_percentage_threshold = 90.0
+        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90)
         @metric_name = "Component/redis/Used memory[megabytes]"
 
         # Get the list at https://api.newrelic.com/v2/components.json
@@ -22,6 +21,15 @@ module Dynosaur
 
       def value_to_resources(value)
         return AddonPlan.new(suitable_plans(value).first)
+      end
+
+      def self.get_config_template
+        {
+          "max_percentage_threshold" => ["text"],
+          "metric_name" => ["text"],
+          "component_id" => ["text"],
+          "new_relic_api_key" => ["text"],
+        }
       end
 
       private

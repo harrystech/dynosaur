@@ -19,7 +19,7 @@ module Dynosaur
   class << self
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
 
-    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins, :debug
+    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins, :debug, :dry_run
 
     def initialize(config)
       puts "Dynosaur version #{Dynosaur::VERSION} initializing"
@@ -109,6 +109,32 @@ module Dynosaur
       return status
     end
 
+    # Modify config at runtime
+    def set_config(config)
+      puts "Dynosaur reconfig:"
+      pp config
+
+      if config.has_key?("scaler")
+        puts "Modifying scaler config"
+        global_config(config["scaler"])
+      end
+      if config.has_key?("controller_plugins")
+        config["controller_plugins"].each { |plugin_config|
+          found = nil
+          @controller_plugins.each { |plugin|
+            if plugin.name == plugin_config["name"]
+              puts "Replacing config for #{plugin.name}"
+              @controller_plugins.delete(plugin)
+            end
+          }
+          if found.nil?
+            puts "Configuring new plugin"
+          end
+
+          config_controller_plugins(config["controller_plugins"])
+        }
+      end
+    end
 
     private
     def load_controller_plugins
@@ -189,33 +215,6 @@ module Dynosaur
         raise "Couldn't find plugin type #{config["type"]}"
       end
       return plugin
-    end
-
-    # Modify config at runtime
-    def set_config(config)
-      puts "Dynosaur reconfig:"
-      pp config
-
-      if config.has_key?("scaler")
-        puts "Modifying scaler config"
-        global_config(config["scaler"])
-      end
-      if config.has_key?("controller_plugins")
-        config["plugins"].each { |plugin_config|
-          found = nil
-          @controller_plugins.each { |plugin|
-            if plugin.name == plugin_config["name"]
-              puts "Replacing config for #{plugin.name}"
-              @controller_plugins.delete(plugin)
-            end
-          }
-          if found.nil?
-            puts "Configuring new plugin"
-          end
-
-          config_controller_plugins(config["controller_plugins"])
-        }
-      end
     end
 
   end # << self

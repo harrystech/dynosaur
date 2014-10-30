@@ -8,8 +8,7 @@ module Dynosaur
       def initialize(config)
         super(config)
         @unit = "log volume (bytes)"
-        @min_percentage_threshold = 10.0
-        @max_percentage_threshold = 90.0
+        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90)
 
         # By far not the most memory efficient strategy as the log volumen will
         # always increase during the day we don't need all the historical data
@@ -36,6 +35,13 @@ module Dynosaur
 
       def value_to_resources(value)
         return AddonPlan.new(suitable_plans(value).first)
+      end
+
+      def self.get_config_template
+        {
+          "max_percentage_threshold" => ["text"],
+          "papertrail_api_key" => ["text"],
+        }
       end
 
       private
