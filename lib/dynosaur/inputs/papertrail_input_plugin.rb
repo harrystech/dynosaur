@@ -59,15 +59,8 @@ module Dynosaur
       end
 
       def plans
-        # TODO: Use Dynosaur::Addons instead
-        Psych.load(plan_file('papertrail'))['dynosaur']['addons']['papertrail']
+        Dynosaur::Addons.plans_for_addon('papertrail')
       end
-
-      def plan_file(addon_name)
-        # TODO: Use Dynosaur::Addons instead
-        File.read(File.join('lib/dynosaur/addons/plans/', "#{addon_name}.yml"))
-      end
-
     end
   end # Inputs
 end # Dynosaur

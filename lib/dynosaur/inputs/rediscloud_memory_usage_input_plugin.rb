@@ -47,13 +47,7 @@ module Dynosaur
       end
 
       def plans
-        # TODO: Use Dynosaur::Addons instead
-        Psych.load(plan_file('rediscloud'))['dynosaur']['addons']['rediscloud']
-      end
-
-      def plan_file(addon_name)
-        # TODO: Use Dynosaur::Addons instead
-        File.read(File.join('lib/dynosaur/addons/plans/', "#{addon_name}.yml"))
+        Dynosaur::Addons.plans_for_addon('rediscloud')
       end
 
     end
