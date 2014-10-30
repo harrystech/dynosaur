@@ -8,7 +8,7 @@ module Dynosaur
       def initialize(config)
         super(config)
         @unit = "number of active connections"
-        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90)
+        @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0)
         @metric_name = "Component/redis/Connections[connections]"
 
         # Get the list at https://api.newrelic.com/v2/components.json
