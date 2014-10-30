@@ -11,6 +11,9 @@ module Dynosaur
         @min_percentage_threshold = 10.0
         @max_percentage_threshold = 90.0
 
+        # By far not the most memory efficient strategy as the log volumen will
+        # always increase during the day we don't need all the historical data
+        # But that allows us to use the default hysteresis logic
         hysteresis_period = 86400 # We want to use the entire day
         @buffer_size = hysteresis_period / @interval  # num intervals to keep
         @recent = RingBuffer.new(@buffer_size)
