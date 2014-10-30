@@ -76,32 +76,6 @@ module Dynosaur
         return combined_estimate
       end
 
-      # Modify config at runtime
-      def set_config(config)
-        puts "Dynosaur reconfig:"
-        pp  config
-
-        if config.has_key?("scaler")
-          puts "Modifying scaler config"
-          global_config(config["scaler"])
-        end
-        if config.has_key?("plugins")
-          config["plugins"].each { |plugin_config|
-            found = nil
-            @plugins.each { |plugin|
-              if plugin.name == plugin_config["name"]
-                puts "Replacing config for #{plugin.name}"
-                @plugins.delete(plugin)
-              end
-            }
-            if found.nil?
-              puts "Configuring new plugin"
-            end
-            @plugins << config_one_plugin(plugin_config)
-          }
-        end
-      end
-
       def scale
         raise NotImplementedError.new("You must define scale in your controller")
       end

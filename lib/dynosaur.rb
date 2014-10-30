@@ -139,8 +139,6 @@ module Dynosaur
       if scaler_config.nil?
         raise "Please include a 'scaler' block in the config"
       end
-      # @min_web_dynos = scaler_config.fetch("min_web_dynos", @min_web_dynos)
-      # @max_web_dynos = scaler_config.fetch("max_web_dynos", @max_web_dynos)
       @dry_run = scaler_config.fetch("dry_run", @dry_run)
       # @stats = scaler_config.fetch("stats", @stats)
       @interval = scaler_config.fetch("interval", @interval)
@@ -159,7 +157,6 @@ module Dynosaur
     # Take the plugin config and return a bunch of plugin instances
     # No magic, we just compare config['type'] to the plugin class name
     def config_controller_plugins(controller_plugins_config)
-      @controller_plugins = []
       controller_plugins_config.each { |config|
         @controller_plugins << config_one_plugin(config)
       }
@@ -189,6 +186,33 @@ module Dynosaur
         raise "Couldn't find plugin type #{config["type"]}"
       end
       return plugin
+    end
+
+    # Modify config at runtime
+    def set_config(config)
+      puts "Dynosaur reconfig:"
+      pp config
+
+      if config.has_key?("scaler")
+        puts "Modifying scaler config"
+        global_config(config["scaler"])
+      end
+      if config.has_key?("controller_plugins")
+        config["plugins"].each { |plugin_config|
+          found = nil
+          @controller_plugins.each { |plugin|
+            if plugin.name == plugin_config["name"]
+              puts "Replacing config for #{plugin.name}"
+              @controller_plugins.delete(plugin)
+            end
+          }
+          if found.nil?
+            puts "Configuring new plugin"
+          end
+
+          config_controller_plugins(config["controller_plugins"])
+        }
+      end
     end
 
   end # << self
