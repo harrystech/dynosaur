@@ -1,4 +1,6 @@
 require 'dynosaur/heroku_manager'
+require 'dynosaur/heroku_dyno_manager'
+require 'dynosaur/heroku_addon_manager'
 require 'dynosaur/version'
 require 'dynosaur/error_handler'
 require 'dynosaur/ring_buffer'

@@ -14,11 +14,15 @@ module Dynosaur
       end
 
       def scale
-        @heroku_manager.ensure_number_of_dynos(@current_estimate)
+        heroku_manager.ensure_value(@current_estimate)
       end
 
       def get_current_resource
-        heroku_manager.get_current_dynos
+        heroku_manager.get_current_value
+      end
+
+      def heroku_manager
+        return @heroku_manager ||= HerokuDynoManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
       end
 
     end # DynosControllerPlugin

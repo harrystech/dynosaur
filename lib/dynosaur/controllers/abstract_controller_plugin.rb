@@ -38,9 +38,7 @@ module Dynosaur
       end
 
       def heroku_manager
-        @heroku_manager ||= HerokuManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
       end
-
 
       def get_combined_estimate
         estimates = []
