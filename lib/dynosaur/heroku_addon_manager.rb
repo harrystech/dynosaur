@@ -13,10 +13,6 @@ module Dynosaur
     end
 
     def set(value)
-      if get_current_plan['id'].nil?
-        raise "Addon: #{@addon_name} is not provisionned on app : #{@app_name}"
-      end
-
       if !@dry_run
         @heroku_platform_api.addon.update(@app_name, @addon_name, {plan: get_plan_id(value)})
       end
@@ -29,8 +25,11 @@ module Dynosaur
     end
 
     def get_plan_id(value)
-      plan_list = @heroku_platform_api.plan.list(@addon_name)
-      return plan_list.find { |plan| plan['name'] == value }['id']
+      if @plans.nil?
+        puts "HITTING THE API: HerokuAddonManager#get_plan_id"
+        @plans = @heroku_platform_api.plan.list(@addon_name)
+      end
+      return @plans.find { |plan| plan['name'] == value }['id']
     end
 
   end

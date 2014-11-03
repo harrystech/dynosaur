@@ -85,8 +85,9 @@ module Dynosaur
       end
 
       def get_current_resource
-        raise NotImplementedError.new("You must define get_current_resource in your controller")
+        heroku_manager.get_current_value
       end
+
 
       def run
         now = Time.now

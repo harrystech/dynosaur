@@ -17,10 +17,6 @@ module Dynosaur
         heroku_manager.ensure_value(@current_estimate)
       end
 
-      def get_current_resource
-        heroku_manager.get_current_value
-      end
-
       def heroku_manager
         return @heroku_manager ||= HerokuDynoManager.new(@heroku_api_key, @heroku_app_name, @dry_run)
       end
