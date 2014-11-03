@@ -128,7 +128,8 @@ module Dynosaur
             puts "Configuring new plugin"
           end
 
-          config_controller_plugins(config["controller_plugins"])
+
+          @controller_plugins << config_one_plugin(plugin_config)
         }
       end
     end
