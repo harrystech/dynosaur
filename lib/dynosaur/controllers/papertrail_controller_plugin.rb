@@ -15,6 +15,7 @@ module Dynosaur
         if @max_resource.nil?
           raise "Max resource not found with name #{max_resource_name}"
         end
+        @stats_callback = nil # We can't log this on librato as we don't have numeric values
       end
 
       def scale

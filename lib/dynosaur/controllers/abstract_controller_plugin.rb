@@ -1,3 +1,4 @@
+require 'librato/metrics'
 
 module Dynosaur
   module Controllers
@@ -15,7 +16,10 @@ module Dynosaur
         @current = 0
         @heroku_app_name = config['heroku_app_name']
         @heroku_api_key = config['heroku_api_key']
+        @librato_email = config['librato_email']
+        @librato_api_key = config['librato_api_key']
         @dry_run = config.fetch("dry_run", false)
+        @stats_callback = self.method(:librato_send) # default built-in stats callback
 
         load_input_plugins config['input_plugins']
       end

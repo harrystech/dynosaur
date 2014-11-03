@@ -10,8 +10,6 @@ require 'dynosaur/controllers/abstract_controller_plugin'
 require 'dynosaur/inputs/abstract_input_plugin'
 
 require 'pp'
-require 'json'
-require 'librato/metrics'
 
 module Dynosaur
 
@@ -19,7 +17,7 @@ module Dynosaur
   class << self
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
 
-    attr_accessor :stats_callback, :heroku_app_name, :controller_plugins, :debug, :dry_run
+    attr_accessor :heroku_app_name, :controller_plugins, :debug, :dry_run
 
     def initialize(config)
       puts "Dynosaur version #{Dynosaur::VERSION} initializing"
@@ -50,7 +48,6 @@ module Dynosaur
       @last_change_ts = nil
       @last_results = {}
       @server = nil
-      # @stats_callback = self.method(:librato_send) # default built-in stats callback
     end
 
     # Start the autoscaler engine loop in a begin/rescue block
@@ -206,6 +203,8 @@ module Dynosaur
           plugin = klass.new(config.merge({
             "heroku_app_name" => @heroku_app_name,
             "heroku_api_key" => @heroku_api_key,
+            "librato_email" => @librato_email,
+            "librato_api_key" => @librato_api_key,
           }))
           break
         end
