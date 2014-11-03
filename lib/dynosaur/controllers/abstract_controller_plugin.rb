@@ -157,7 +157,9 @@ module Dynosaur
       # for only one method
       #
       def default_value_if_blank(value, default)
-        if value.nil? || value.empty?
+        # Stolen from: http://api.rubyonrails.org/classes/Object.html#method-i-blank-3F
+        empty = value.respond_to?(:empty?) ? !!value.empty? : !value
+        if empty
           return default
         else
           return value
