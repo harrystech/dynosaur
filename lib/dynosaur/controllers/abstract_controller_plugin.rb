@@ -35,6 +35,7 @@ module Dynosaur
         # Load the class and instanciate it
         begin
           klass = Kernel.const_get(input_plugin_config['type'])
+          puts "Instantiating #{klass.name} for config '#{input_plugin_config["name"]}'"
           return klass.new(input_plugin_config)
         rescue NameError => e
           raise "Could not load #{input_plugin_config['type']}, #{e.message}"

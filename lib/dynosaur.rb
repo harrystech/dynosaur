@@ -122,6 +122,7 @@ module Dynosaur
             if plugin.name == plugin_config["name"]
               puts "Replacing config for #{plugin.name}"
               @controller_plugins.delete(plugin)
+              found = plugin
             end
           }
           if found.nil?

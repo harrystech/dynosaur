@@ -10,7 +10,8 @@ module Dynosaur
       end
 
       def retrieve
-        v = SecureRandom.random_number(50000)
+        max_value = (50000 * @max_percentage_threshold / 100).to_i
+        v = SecureRandom.random_number(max_value)
         puts "Generated new random int: #{v}"
         return v
       end
