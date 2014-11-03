@@ -152,6 +152,18 @@ module Dynosaur
         end
       end
 
+      #
+      # We don't have access to #blank? and it would be dumb to include activesupport
+      # for only one method
+      #
+      def default_value_if_blank(value, default)
+        if value.nil? || value.empty?
+          return default
+        else
+          return value
+        end
+      end
+
 
     end # AbstractControllerPlugin
   end # Controllers

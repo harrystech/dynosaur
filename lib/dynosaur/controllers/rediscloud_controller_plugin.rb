@@ -4,13 +4,14 @@ module Dynosaur
 
       def initialize(config)
         super(config)
-        min_resource_name = config.fetch('min_resource', Dynosaur::Addons.all['rediscloud'].first['name'])
-        max_resource_name = config.fetch('max_resource', Dynosaur::Addons.all['rediscloud'].last['name'])
-        @min_resource = AddonPlan.new(Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == min_resource_name })
+        min_resource_name = default_value_if_blank(config['min_resource'], Dynosaur::Addons.all['rediscloud'].first['name'])
+        max_resource_name = default_value_if_blank(config['max_resource'], Dynosaur::Addons.all['rediscloud'].last['name'])
+
+        @min_resource = Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == min_resource_name }
         if @min_resource.nil?
           raise "Min resource not found with name #{min_resource_name}"
         end
-        @max_resource = AddonPlan.new(Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == max_resource_name })
+        @max_resource = Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == max_resource_name }
         if @max_resource.nil?
           raise "Max resource not found with name #{max_resource_name}"
         end
