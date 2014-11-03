@@ -34,8 +34,12 @@ module Dynosaur
           'to' => to,
         }
       end
-      response_data = JSON.parse(response.body)
-      return response_data['metric_data']['metrics'][0]['timeslices'][0]['values']['average_value']
+      if response.status == 200
+        response_data = JSON.parse(response.body)
+        return response_data['metric_data']['metrics'][0]['timeslices'][0]['values']['average_value']
+      else
+        puts "Error retrieving data from New Relic for metric #{metric_name}"
+      end
     end
   end
 end
