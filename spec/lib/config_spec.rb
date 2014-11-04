@@ -1,13 +1,14 @@
 require 'spec_helper'
 
-require 'dynosaur'
-
 describe "Loading plugins" do
   it "Should load plugin classes" do
-    config = get_config_with_test_plugin(0)
+    config = get_config_with_test_plugin(1)
     Dynosaur.initialize(config)
-    subclasses = ScalerPlugin.subclasses
-    subclasses.should include(RandomPlugin)
+    subclasses = Dynosaur::Controllers::AbstractControllerPlugin.subclasses
+    subclasses.should include(Dynosaur::Controllers::DynosControllerPlugin)
+
+    input_subclasses = Dynosaur::Inputs::AbstractInputPlugin.subclasses
+    input_subclasses.should include(Dynosaur::Inputs::RandomPlugin)
   end
 
   it "should handle global config" do
@@ -19,15 +20,15 @@ describe "Loading plugins" do
   it "should configure the random plugin" do
     config = get_config_with_test_plugin
     Dynosaur.initialize(config)
-    plugins = Dynosaur.plugins
-    plugins.length.should eql 1
-    plugins[0].unit.should eql "randoms"
-    plugins[0].seed.should eql config["plugins"][0]["seed"]
+    controller_plugins = Dynosaur.controller_plugins
+    controller_plugins.length.should eql 1
+    controller_plugins[0].input_plugins[0].unit.should eql "randoms"
+    controller_plugins[0].input_plugins[0].seed.should eql config["controller_plugins"][0]["input_plugins"][0]["seed"]
   end
 
   it "should complain for missing config" do
     config = get_config_with_test_plugin
-    config["plugins"][0].delete("name")
+    config["controller_plugins"][0].delete("name")
     expect {
       Dynosaur.initialize(config)
     }.to raise_error("You must specify a name")

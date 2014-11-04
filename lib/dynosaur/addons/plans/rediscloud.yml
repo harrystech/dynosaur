@@ -1,0 +1,53 @@
+dynosaur:
+  addons:
+    rediscloud:
+      -
+        name: "rediscloud:25"
+        max_memory: 25
+        max_connections: 10
+        tier: 0
+      -
+        name: "rediscloud:100"
+        max_memory: 100
+        max_connections: 256
+        tier: 1
+      -
+        name: "rediscloud:250"
+        max_memory: 250
+        max_connections: 256
+        tier: 2
+      -
+        name: "rediscloud:500"
+        max_memory: 500
+        max_connections: 512
+        tier: 3
+      -
+        name: "rediscloud:1000"
+        max_memory: 1000
+        max_connections: 1024
+        tier: 4
+      -
+        name: "rediscloud:2500"
+        max_memory: 2500
+        max_connections:
+        tier: 5
+      -
+        name: "rediscloud:5000"
+        max_memory: 5000
+        max_connections:
+        tier: 6
+      -
+        name: "rediscloud:10000"
+        max_memory: 10000
+        max_connections:
+        tier: 7
+      -
+        name: "rediscloud:25000"
+        max_memory: 25000
+        max_connections:
+        tier: 8
+      -
+        name: "rediscloud:50000"
+        max_memory: 50000
+        max_connections:
+        tier: 9

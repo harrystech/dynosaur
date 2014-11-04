@@ -4,10 +4,10 @@
 # loaded once.
 
 require 'pry'
+require 'dynosaur'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
 
@@ -23,8 +23,6 @@ def get_config_with_test_plugin(num_plugins=1)
   app_name = SecureRandom.uuid
   config = {
     "scaler" => {
-      "min_web_dynos" => 3,
-      "max_web_dynos" => 27,
       "heroku_api_key" => api_key,
       "heroku_app_name" => app_name,
       "dry_run" => true,
@@ -32,16 +30,72 @@ def get_config_with_test_plugin(num_plugins=1)
 
     }
   }
-  plugins = []
+  input_plugins = []
   num_plugins.times { |i|
-    plugins << {
+    input_plugins << {
       "name" => "random_#{i}",
-      "type" => "RandomPlugin",
+      "type" => "Dynosaur::Inputs::RandomPlugin",
       "seed" => 1234,
-      "hysteresis_period" => 30
+      "hysteresis_period" => 30,
     }
   }
-  config["plugins"] = plugins
+  config["controller_plugins"] = [{
+    'name' => 'Random Plugin',
+    'type' => 'Dynosaur::Controllers::DynosControllerPlugin',
+    'input_plugins' => input_plugins,
+    "min_resource" => 3,
+    "max_resource" => 27,
+  }]
 
   return config
 end
+
+def stub_redis_memory_usage(fake_value, component_id: 42)
+  stub_new_relic_metric("Component/redis/Used Memory[megabytes]", fake_value, component_id)
+end
+
+def stub_redis_connection_usage(fake_value, component_id: 42)
+  stub_new_relic_metric("Component/redis/Connections[connections]", fake_value, component_id)
+end
+
+def stub_new_relic_metric(metric_name, fake_value, component_id)
+  fake_response = {
+    "metric_data"=>{
+      "from"=>"2014-10-28T14:06:43+00:00",
+      "to"=>"2014-10-28T14:36:43+00:00",
+      "metrics"=>[{
+        "name"=>metric_name,
+        "timeslices"=>[{
+          "from"=>"2014-10-28T14:06:00+00:00",
+          "to"=>"2014-10-28T14:35:59+00:00",
+          "values"=>{"average_value"=>fake_value}
+        }]
+      }]
+    }
+  }
+  stubs = Faraday::Adapter::Test::Stubs.new
+  test_connection = Faraday.new do |builder|
+    builder.adapter :test, stubs do |stub|
+      stub.post("/v2/components/#{component_id}/metrics/data.json") { |env| [ 200, {}, fake_response.to_json ]}
+    end
+  end
+  allow_any_instance_of(Dynosaur::NewRelicApiClient).to receive(:faraday_connection).and_return(test_connection)
+end
+
+def stub_papertrail_api(usage)
+  fake_response = {
+    "log_data_transfer_used"=>usage,
+    "log_data_transfer_used_percent"=>25.801992416381836, # we never read that
+    "log_data_transfer_plan_limit"=>10485760, # we never read that
+    "log_data_transfer_hard_limit"=>10485760, # we never read that
+  }
+  stubs = Faraday::Adapter::Test::Stubs.new
+  test_connection = Faraday.new do |builder|
+    builder.adapter :test, stubs do |stub|
+      stub.get("/api/v1/accounts") { |env| [ 200, {}, fake_response.to_json ]}
+    end
+  end
+  allow_any_instance_of(Dynosaur::PapertrailApiClient).to receive(:faraday_connection).and_return(test_connection)
+end
+
+
