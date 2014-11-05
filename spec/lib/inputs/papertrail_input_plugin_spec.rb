@@ -69,6 +69,27 @@ describe Dynosaur::Inputs::PapertrailInputPlugin do
       end
       plugin.recent.size.should eq(1)
     end
+
+    it 'only resets once' do
+      now = Time.parse '2014-10-29 23:59:55 -0000'
+      stub_papertrail_api(1024 * 1024 + 1024)
+      expect(plugin.recent).to receive(:clear).once
+      Timecop.freeze(now) do
+        plugin.estimated_resources
+      end
+
+      Timecop.freeze(now + 11) do
+        plugin.estimated_resources
+      end
+
+      Timecop.freeze(now + 21) do
+        plugin.estimated_resources
+      end
+
+      Timecop.freeze(now + 31) do
+        plugin.estimated_resources
+      end
+    end
   end
 
 end
