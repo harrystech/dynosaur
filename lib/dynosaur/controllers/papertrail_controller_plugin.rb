@@ -20,7 +20,7 @@ module Dynosaur
       end
 
       def scale
-        heroku_manager.ensure_value(@current_estimate['name'])
+        heroku_manager.ensure_value(@current_estimate)
       end
 
       def heroku_manager
