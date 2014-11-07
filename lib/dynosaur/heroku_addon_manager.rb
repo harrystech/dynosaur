@@ -29,7 +29,6 @@ module Dynosaur
 
     def get_plan_id(plan)
       if @plans.nil?
-        puts "HITTING THE API: HerokuAddonManager#get_plan_id"
         @plans = @heroku_platform_api.plan.list(@addon_name)
       end
       plan_name = plan['name']
