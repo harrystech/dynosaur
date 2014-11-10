@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "HerokuManager" do
+describe Dynosaur::HerokuDynoManager do
   before do
     @api_key = SecureRandom.uuid
     @app_name = SecureRandom.uuid

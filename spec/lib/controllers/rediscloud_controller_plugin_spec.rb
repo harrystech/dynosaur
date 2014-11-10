@@ -70,4 +70,18 @@ describe Dynosaur::Controllers::RediscloudControllerPlugin do
       end
     end
   end
+
+  describe '#run' do
+    before do
+      # This is what the API returns
+      controller_plugin.heroku_manager.stub(:get_current_plan).and_return({
+        "id"=>"9368f946-7c1b-40fc-97ea-abe8722a93d6",
+        "name"=>"rediscloud:25",
+      })
+    end
+    it 'only scales if values are different' do
+      controller_plugin.should_not receive(:scale)
+      controller_plugin.run
+    end
+  end
 end

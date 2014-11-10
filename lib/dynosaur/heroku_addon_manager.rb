@@ -6,17 +6,21 @@ module Dynosaur
     def initialize(addon_name, app_name, api_key, dry_run)
       super(app_name, api_key, dry_run)
       @addon_name = addon_name
+      @current_value = nil
     end
 
     def retrieve
-      return get_current_plan['name']
+      plan_name = get_current_plan['name']
+      plans = Dynosaur::Addons.plans_for_addon(@addon_name)
+      current_plan = plans.find { |plan| plan['name'] == plan_name }
+      return current_plan
     end
 
-    def set(value)
+    def set(plan)
       if !@dry_run
-        @heroku_platform_api.addon.update(@app_name, @addon_name, {plan: get_plan_id(value)})
+        @heroku_platform_api.addon.update(@app_name, @addon_name, {plan: get_plan_id(plan)})
       end
-      @current_value = value
+      @current_value = plan
     end
 
     def get_current_plan
@@ -24,12 +28,12 @@ module Dynosaur
       return addons.find { |addon| addon['name'] == @addon_name }['plan']
     end
 
-    def get_plan_id(value)
+    def get_plan_id(plan)
       if @plans.nil?
-        puts "HITTING THE API: HerokuAddonManager#get_plan_id"
         @plans = @heroku_platform_api.plan.list(@addon_name)
       end
-      return @plans.find { |plan| plan['name'] == value }['id']
+      plan_name = plan['name']
+      return @plans.find { |plan| plan['name'] == plan_name }['id']
     end
 
   end
