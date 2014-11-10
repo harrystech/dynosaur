@@ -6,6 +6,7 @@ module Dynosaur
     def initialize(addon_name, app_name, api_key, dry_run)
       super(app_name, api_key, dry_run)
       @addon_name = addon_name
+      @current_value = nil
     end
 
     def retrieve
