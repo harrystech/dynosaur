@@ -21,16 +21,13 @@ module Dynosaur
       end
 
       def retrieve
-        get_log_volume
-      end
-
-      def get_value
+        volume = get_log_volume
         today = Time.now.utc.day
         if (Time.now.utc - @interval).day == today - 1
           puts "Resetting historic data for the past day, and starting fresh."
           @recent.clear
         end
-        super
+        return volume
       end
 
       def value_to_resources(value)
