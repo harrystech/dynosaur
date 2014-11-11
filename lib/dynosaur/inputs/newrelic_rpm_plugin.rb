@@ -42,7 +42,7 @@ module Dynosaur
 
       def value_to_resources(value)
         estimate = (value / @rpm_per_dyno.to_f).ceil
-        puts "NEW RELIC: #{@recent} => #{value} : #{estimate}"
+        Dynosaur.log "NEW RELIC: #{@recent} => #{value} : #{estimate}"
         return estimate
       end
 
@@ -74,8 +74,8 @@ module Dynosaur
           end
         rescue Exception => e
           ErrorHandler.report(e)
-          puts "ERROR: failed to decipher New Relic result"
-          puts e.inspect
+          Dynosaur.log "ERROR: failed to decipher New Relic result"
+          Dynosaur.log e.inspect
         end
         return rpm
       end
