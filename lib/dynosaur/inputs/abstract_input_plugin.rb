@@ -47,7 +47,7 @@ module Dynosaur
             @value = self.retrieve
             @last_retrieved_ts = now
           rescue Exception => e
-            puts "Error in #{self.name}#retrieve : #{e.inspect}"
+            Dynosaur.log "Error in #{self.name}#retrieve : #{e.inspect}"
             ErrorHandler.report(e)
             @value = -1
           end

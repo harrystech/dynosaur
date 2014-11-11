@@ -29,13 +29,13 @@ module Dynosaur
           @retrievals += 1
           # If we're dry-running, we'll pretend
           if @dry_run
-            puts "DRY RUN: using last set dynos instead of hitting the API (#{@current_value})"
+            Dynosaur.log "DRY RUN: using last set dynos instead of hitting the API (#{@current_value})"
           else
             @current_value = self.retrieve
           end
           @last_retrieved_ts = now
         rescue Exception => e
-          puts "Error in heroku retrieve : #{e.inspect}"
+          Dynosaur.log "Error in heroku retrieve : #{e.inspect}"
           ErrorHandler.report(e)
           @current_value = -1
         end
@@ -49,7 +49,7 @@ module Dynosaur
       if current != value
         set(value)
       else
-        puts "Current value already at #{value}"
+        Dynosaur.log "Current value already at #{value}"
       end
     end
 

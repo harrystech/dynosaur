@@ -25,7 +25,7 @@ module Dynosaur
 
       def value_to_resources(value)
         estimate = (value/10.0).ceil
-        puts "SINE: #{@recent} => #{value} : #{estimate}"
+        Dynosaur.log "SINE: #{@recent} => #{value} : #{estimate}"
         return estimate
       end
 

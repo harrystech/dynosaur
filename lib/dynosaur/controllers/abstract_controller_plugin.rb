@@ -35,7 +35,7 @@ module Dynosaur
         # Load the class and instanciate it
         begin
           klass = Kernel.const_get(input_plugin_config['type'])
-          puts "Instantiating #{klass.name} for config '#{input_plugin_config["name"]}'"
+          Dynosaur.log "Instantiating #{klass.name} for config '#{input_plugin_config["name"]}'"
           return klass.new(input_plugin_config)
         rescue NameError => e
           raise "Could not load #{input_plugin_config['type']}, #{e.message}"
@@ -101,7 +101,7 @@ module Dynosaur
         after = get_current_resource
 
         if before != after
-          puts "CHANGE: #{before} => #{after}"
+          Dynosaur.log "CHANGE: #{before} => #{after}"
           @last_change_ts = Time.now
         end
         @current = after
@@ -109,7 +109,7 @@ module Dynosaur
         @last_results.each { |name, result|
           details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
         }
-        puts "#{now} [combined: #{@current_estimate}]  #{details}"
+        Dynosaur.log "#{now} [combined: #{@current_estimate}]  #{details}"
 
         handle_stats(now, @current_estimate, before, after)
       end
@@ -117,7 +117,7 @@ module Dynosaur
       # Built-in stats callback: librato
       def librato_send(stats)
         if @librato_api_key.nil? || @librato_api_key.empty? || @librato_email.nil? || @librato_email.empty?
-          puts "No librato api key and email"
+          Dynosaur.log "No librato api key and email"
           return
         end
         begin
@@ -134,8 +134,8 @@ module Dynosaur
 
           Librato::Metrics.submit(metrics)
         rescue Exception => e
-          puts "Error sending librato metrics"
-          puts e.message
+          Dynosaur.log "Error sending librato metrics"
+          Dynosaur.log e.message
         end
       end
 

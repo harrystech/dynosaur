@@ -19,7 +19,7 @@ module Dynosaur
       def retrieve
         v = @last + SecureRandom.random_number(18) - 9
         v = 0 if v < 0
-        puts "Generated new random int: #{v}"
+        Dynosaur.log "Generated new random int: #{v}"
         return v
       end
 

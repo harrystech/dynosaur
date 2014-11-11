@@ -7,7 +7,7 @@ module Dynosaur
     end
 
     def set(value)
-      puts "Setting current dynos to #{value}"
+      Dynosaur.log "Setting current dynos to #{value}"
       if !@dry_run
         @heroku.post_ps_scale(@app_name, 'web', value)
       end

@@ -67,10 +67,10 @@ module Dynosaur
           :application_version => Dynosaur::VERSION)
         @client.authorization = nil
         if @keytext  # load key from string
-          puts "Loading key from PEM text"
+          Dynosaur.log "Loading key from PEM text"
           @key = OpenSSL::PKey::RSA.new(@keytext)
         else  # load key from encrypted file
-          puts "Loading key from file #{@keyfile}"
+          Dynosaur.log "Loading key from file #{@keyfile}"
           @key = Google::APIClient::KeyUtils.load_from_pkcs12(@keyfile, @passphrase)
         end
         @analytics = nil
@@ -121,8 +121,8 @@ module Dynosaur
           active = r.data.rows[0][0].to_i
         rescue Exception => e
           ErrorHandler.report(e)
-          puts "ERROR: failed to decipher result, forcing re-auth"
-          puts e.inspect
+          Dynosaur.log "ERROR: failed to decipher result, forcing re-auth"
+          Dynosaur.log e.inspect
           begin
             authorize(true)
           rescue Exception => e

@@ -98,4 +98,6 @@ def stub_papertrail_api(usage)
   allow_any_instance_of(Dynosaur::PapertrailApiClient).to receive(:faraday_connection).and_return(test_connection)
 end
 
-
+if ENV["SILENCE_LOGS"] == 'true'
+  Dynosaur.silence_logs = true
+end

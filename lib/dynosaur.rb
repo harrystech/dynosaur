@@ -17,10 +17,10 @@ module Dynosaur
   class << self
     DEFAULT_SCALER_INTERVAL = 5      # seconds between wakeups
 
-    attr_accessor :heroku_app_name, :controller_plugins, :debug, :dry_run
+    attr_accessor :heroku_app_name, :controller_plugins, :debug, :dry_run, :silence_logs
 
     def initialize(config)
-      puts "Dynosaur version #{Dynosaur::VERSION} initializing"
+      Dynosaur.log "Dynosaur version #{Dynosaur::VERSION} initializing"
 
       # Config defaults
       @dry_run = false
@@ -108,11 +108,11 @@ module Dynosaur
 
     # Modify config at runtime
     def set_config(config)
-      puts "Dynosaur reconfig:"
+      Dynosaur.log "Dynosaur reconfig:"
       pp config
 
       if config.has_key?("scaler")
-        puts "Modifying scaler config"
+        Dynosaur.log "Modifying scaler config"
         global_config(config["scaler"])
       end
       if config.has_key?("controller_plugins")
@@ -120,13 +120,13 @@ module Dynosaur
           found = nil
           @controller_plugins.each { |plugin|
             if plugin.name == plugin_config["name"]
-              puts "Replacing config for #{plugin.name}"
+              Dynosaur.log "Replacing config for #{plugin.name}"
               @controller_plugins.delete(plugin)
               found = plugin
             end
           }
           if found.nil?
-            puts "Configuring new plugin"
+            Dynosaur.log "Configuring new plugin"
           end
 
 
@@ -135,16 +135,22 @@ module Dynosaur
       end
     end
 
+    def log(str)
+      if !silence_logs
+        puts str
+      end
+    end
+
     private
     def load_controller_plugins
       # Load plugins (see glob on next line)
       load_path = File.join(File.dirname(__FILE__), "dynosaur", "controllers", "*_plugin.rb")
-      puts "Loading plugins from #{load_path}"
+      Dynosaur.log "Loading plugins from #{load_path}"
       Gem.find_files(load_path).each { |path|
         if path.split("/")[-1] == "abstract_controller_plugin.rb"
           next
         end
-        puts "Loading #{path}"
+        Dynosaur.log "Loading #{path}"
         require path[0..-4]
       }
     end
@@ -152,12 +158,12 @@ module Dynosaur
     def load_input_plugins
       # Load plugins (see glob on next line)
       load_path = File.join(File.dirname(__FILE__), "dynosaur", "inputs", "*_plugin.rb")
-      puts "Loading plugins from #{load_path}"
+      Dynosaur.log "Loading plugins from #{load_path}"
       Gem.find_files(load_path).each { |path|
         if path.split("/")[-1] == "abstract_input_plugin.rb"
           next
         end
-        puts "Loading #{path}"
+        Dynosaur.log "Loading #{path}"
         require path[0..-4]
       }
     end
@@ -196,7 +202,7 @@ module Dynosaur
       plugin = nil
       subclasses.each { |klass|
         if klass.name == config["type"]
-          puts "Instantiating #{klass.name} for config '#{config["name"]}'"
+          Dynosaur.log "Instantiating #{klass.name} for config '#{config["name"]}'"
           if @dry_run
             # Dry run is set globally
             # if it's not set globally, let each controller have its own dry run setting
