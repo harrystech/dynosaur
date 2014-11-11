@@ -57,6 +57,7 @@ module Dynosaur
       end
 
       def value_to_resources(value)
+        return -1 if value.nil?
         return (value / @users_per_dyno.to_f).ceil
       end
 

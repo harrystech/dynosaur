@@ -45,8 +45,6 @@ module Dynosaur
 
       # State variables
       @stopped = false
-      @last_change_ts = nil
-      @last_results = {}
       @server = nil
     end
 
@@ -97,13 +95,14 @@ module Dynosaur
     # Get status hash (used in dynosaur-rails)
     def get_status
       status = {
-        "time" => Time.now,
-        "current" => @current,
-        "current_estimate" => @current_estimate,
-        "last_changed" => @last_change_ts,
-        "results" => @last_results,
+        "stopped" => @stopped,
+        "controller_status" => get_plugins_status,
       }
       return status
+    end
+
+    def get_plugins_status
+      return @controller_plugins.map { |plugin| plugin.get_status }
     end
 
     # Modify config at runtime

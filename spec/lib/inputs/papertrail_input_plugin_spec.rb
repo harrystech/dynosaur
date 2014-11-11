@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'timecop'
 require 'dynosaur/inputs/papertrail_input_plugin'
 
 describe Dynosaur::Inputs::PapertrailInputPlugin do

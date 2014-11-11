@@ -5,6 +5,7 @@
 
 require 'pry'
 require 'dynosaur'
+require 'timecop'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
