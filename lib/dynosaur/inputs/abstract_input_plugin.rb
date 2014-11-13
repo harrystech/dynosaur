@@ -29,9 +29,6 @@ module Dynosaur
       def estimated_resources
         self.get_value # force refresh if @interval has run out
         recent_max = self.max_recent_values
-        # if recent_max.nil?
-        #   return -1 # TODO: Might want to return nil here as not all values are int or we might want to let the implementation of value_to_resources handle the nil value
-        # end
         return self.value_to_resources(recent_max) # call the implementation-specific conversion routine
       end
 
@@ -41,6 +38,7 @@ module Dynosaur
 
       def get_value
         now = Time.now
+        # binding.pry
         if now > (@last_retrieved_ts + @interval)
           begin
             @retrievals += 1
@@ -63,6 +61,24 @@ module Dynosaur
 
       def min_recent_values
         return @recent.min
+      end
+
+      def get_status
+        now = Time.now
+        value = get_value
+        estimate = estimated_resources  # minor race condition, but only matters for logging
+        health = "OK"
+        if now - @last_retrieved_ts > @interval
+          health = "STALE"
+        end
+        status = {
+          "estimate" => estimate,
+          "value" => value,
+          "unit" => @unit,
+          "last_retrieved" => @last_retrieved_ts,
+          "health" => health,
+        }
+        return status
       end
 
     end

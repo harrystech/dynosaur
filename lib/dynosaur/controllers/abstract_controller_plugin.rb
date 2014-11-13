@@ -9,17 +9,18 @@ module Dynosaur
       def initialize(config)
         super(config)
 
-        @value = nil
         # State variables
         @stopped = false
-        @current_estimate = 0
-        @current = 0
+        @current_estimate = nil
+        @current = nil
         @heroku_app_name = config['heroku_app_name']
         @heroku_api_key = config['heroku_api_key']
         @librato_email = config['librato_email']
         @librato_api_key = config['librato_api_key']
         @dry_run = config.fetch("dry_run", false)
         @stats_callback = self.method(:librato_send) # default built-in stats callback
+        @last_results = {}
+        @last_change_ts = nil
 
         load_input_plugins config['input_plugins']
       end
@@ -49,24 +50,11 @@ module Dynosaur
       def get_combined_estimate
         estimates = []
         details = {}
-        now = Time.now
         # Get the estimated dynos from all configured plugins
         @input_plugins.each { |plugin|
-          value = plugin.get_value
-          estimate = plugin.estimated_resources  # minor race condition, but only matters for logging
-          health = "OK"
-          if now - plugin.last_retrieved_ts > plugin.interval
-            health = "STALE"
-          end
-          details[plugin.name] = {
-            "estimate" => estimate,
-            "value" => value,
-            "unit" => plugin.unit,
-            "last_retrieved" => plugin.last_retrieved_ts,
-            "health" => health
-
-          }
-          estimates << estimate
+          plugin_status = plugin.get_status
+          details[plugin.name] = plugin_status
+          estimates << plugin_status['estimate']
         }
         @last_results = details
 
@@ -88,6 +76,17 @@ module Dynosaur
         heroku_manager.get_current_value
       end
 
+      def get_status
+        status = {
+          "time" => Time.now,
+          "name" => @name,
+          "current" => @current,
+          "current_estimate" => @current_estimate,
+          "last_changed" => @last_change_ts,
+          "results" => @last_results,
+        }
+        return status
+      end
 
       def run
         now = Time.now
@@ -105,13 +104,17 @@ module Dynosaur
           @last_change_ts = Time.now
         end
         @current = after
+        log_status(now)
+
+        handle_stats(now, @current_estimate, before, after)
+      end
+
+      def log_status(now)
         details = ""
         @last_results.each { |name, result|
           details += "#{name}: #{result["value"]}, #{result["estimate"]}; "
         }
         puts "#{now} [combined: #{@current_estimate}]  #{details}"
-
-        handle_stats(now, @current_estimate, before, after)
       end
 
       # Built-in stats callback: librato
@@ -141,9 +144,8 @@ module Dynosaur
 
 
       def handle_stats(now, combined_estimate, before, after)
-        results = @last_results  # try to minimize race conditions in the iteration
         stats = {
-          :plugins => results,
+          :plugins => @last_results, # try to minimize race conditions in the iteration
           :ts => now,
           :estimate => combined_estimate,
           :before => before,

@@ -88,4 +88,30 @@ describe "Input Plugins" do
     t = Dynosaur::Inputs::RandomPlugin.get_config_template
     puts t
   end
+
+  context 'status' do
+    before do
+      config = get_config_with_test_plugin
+      config["controller_plugins"][0]['input_plugins'][0]['interval'] = 30
+      Dynosaur.initialize(config)
+    end
+    let(:dyno_controller) { Dynosaur.controller_plugins[0] }
+    let(:rand) { dyno_controller.input_plugins[0] }
+
+    context 'when ok' do
+      it "returns ok" do
+        rand.get_status.should be_a Hash
+        rand.get_status['health'].should eq('OK')
+      end
+    end
+
+    context 'when stale' do
+      it "returns stale" do
+        rand.stub(:retrieve).and_raise(Exception)
+        rand.instance_variable_set(:@last_retrieved_ts, 5.minutes.ago)
+        rand.get_status.should be_a Hash
+        rand.get_status['health'].should eq('STALE')
+      end
+    end
+  end
 end

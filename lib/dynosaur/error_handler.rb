@@ -4,7 +4,7 @@ require 'mail'
 module ErrorHandler
   class << self
     def initialize
-      puts "Initializing default error handler"
+      # puts "Initializing default error handler"
       @has_mail = false
       @smtp_host = "smtp.sendgrid.net"
       @smtp_port = 587

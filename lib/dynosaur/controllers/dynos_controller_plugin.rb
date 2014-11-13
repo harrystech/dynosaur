@@ -11,6 +11,8 @@ module Dynosaur
         super(config)
         @min_resource = default_value_if_blank(config['min_resource'], DEFAULT_MIN_WEB_DYNOS).to_i
         @max_resource = default_value_if_blank(config['max_resource'], DEFAULT_MAX_WEB_DYNOS).to_i
+        @current_estimate = 0
+        @current = 0
       end
 
       def scale
