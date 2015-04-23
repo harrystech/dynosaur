@@ -25,7 +25,7 @@ module Dynosaur
 
     def get_current_plan
       addons = @heroku_platform_api.addon.list(@app_name)
-      return addons.find { |addon| addon['name'] == @addon_name }['plan']
+      return addons.find { |addon| addon['addon_service']['name'] == @addon_name }['plan']
     end
 
     def get_plan_id(plan)
