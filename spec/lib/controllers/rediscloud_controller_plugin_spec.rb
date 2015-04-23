@@ -74,9 +74,12 @@ describe Dynosaur::Controllers::RediscloudControllerPlugin do
   describe '#run' do
     before do
       # This is what the API returns
-      controller_plugin.heroku_manager.stub(:get_current_plan).and_return({
-        "id"=>"9368f946-7c1b-40fc-97ea-abe8722a93d6",
-        "name"=>"rediscloud:25",
+      controller_plugin.heroku_manager.stub(:current_addon).and_return({
+        "id"=>"foo",
+        "plan"=>{
+          "id"=>"9368f946-7c1b-40fc-97ea-abe8722a93d6",
+          "name"=>"rediscloud:25",
+        }
       })
     end
     it 'only scales if values are different' do
