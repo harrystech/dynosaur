@@ -108,9 +108,17 @@ describe "Input Plugins" do
     context 'when stale' do
       it "returns stale" do
         rand.stub(:retrieve).and_raise(Exception)
-        rand.instance_variable_set(:@last_retrieved_ts, 5.minutes.ago)
+        rand.instance_variable_set(:@last_retrieved_ts, 4.minutes.ago)
         rand.get_status.should be_a Hash
         rand.get_status['health'].should eq('STALE')
+      end
+    end
+    context 'when outage' do
+      it "returns outage" do
+        rand.stub(:retrieve).and_raise(Exception)
+        rand.instance_variable_set(:@last_retrieved_ts, 6.minutes.ago)
+        rand.get_status.should be_a Hash
+        rand.get_status['health'].should eq('OUTAGE')
       end
     end
   end

@@ -7,6 +7,7 @@ module Dynosaur
 
       DEFAULT_INTERVAL = 60
       DEFAULT_HYSTERESIS_PERIOD = 300    # seconds we must be below threshold before reducing estimated dynos
+      DEFAULT_OUTAGE_PERIOD = 300        # seconds since we got a good reading (we report the outage otherwise)
 
       attr_reader :name, :unit, :last_retrieved_ts, :recent, :retrievals, :buffer_size, :interval
 
@@ -70,6 +71,9 @@ module Dynosaur
         health = "OK"
         if now - @last_retrieved_ts > @interval
           health = "STALE"
+        end
+        if now - @last_retrieved_ts > DEFAULT_OUTAGE_PERIOD
+          health = "OUTAGE"
         end
         status = {
           "estimate" => estimate,
