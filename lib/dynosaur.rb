@@ -46,6 +46,7 @@ module Dynosaur
       # State variables
       @stopped = false
       @server = nil
+      @last_error = nil
     end
 
     # Start the autoscaler engine loop in a begin/rescue block
@@ -63,6 +64,7 @@ module Dynosaur
           raise
         rescue Exception => e  # any other error
           ErrorHandler.report(e)
+          @last_error = Time.now
           sleep @interval
         end
       end
@@ -97,6 +99,7 @@ module Dynosaur
       status = {
         "stopped" => @stopped,
         "controller_status" => get_plugins_status,
+        "last_error" => @last_error
       }
       return status
     end
