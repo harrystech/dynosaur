@@ -34,10 +34,13 @@ module Dynosaur
             @current_value = self.retrieve
           end
           @last_retrieved_ts = now
-        rescue Exception => e
+        rescue SystemExit, Interrupt # purposeful quit, ctrl-c, kill signal etc
+          raise
+        rescue StandardError => e
           puts "Error in heroku retrieve : #{e.inspect}"
-          ErrorHandler.report(e)
+          Dynosaur::ErrorHandler.handle(e)
           @current_value = -1
+          raise
         end
       end
       return @current_value

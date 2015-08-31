@@ -121,13 +121,13 @@ module Dynosaur
           end
           active = r.data.rows[0][0].to_i
         rescue Exception => e
-          ErrorHandler.report(e)
+          Dynosaur::ErrorHandler.handle(e)
           puts "ERROR: failed to decipher result, forcing re-auth"
           puts e.inspect
           begin
             authorize(true)
           rescue Exception => e
-            ErrorHandler.report(e)
+            Dynosaur::ErrorHandler.handle(e)
           end
         end
         return active

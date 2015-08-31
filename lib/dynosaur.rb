@@ -1,3 +1,6 @@
+require 'active_support'
+require 'active_support/core_ext'
+
 require 'dynosaur/heroku_manager'
 require 'dynosaur/heroku_dyno_manager'
 require 'dynosaur/heroku_addon_manager'
@@ -33,7 +36,8 @@ module Dynosaur
       @librato_email = nil
       @controller_plugins = []
 
-      ErrorHandler.initialize
+      # Load error handler plugins
+      ErrorHandler.initialize(config["error_handlers"])
 
       # Load all controllers
       load_controller_plugins
@@ -62,8 +66,8 @@ module Dynosaur
           sleep @interval
         rescue SystemExit, Interrupt # purposeful quit, ctrl-c, kill signal etc
           raise
-        rescue Exception => e  # any other error
-          ErrorHandler.report(e)
+        rescue StandardError => e  # any other error
+          ErrorHandler.handle(e)
           @last_error = Time.now
           sleep @interval
         end
@@ -76,6 +80,7 @@ module Dynosaur
       @controller_plugins.each do |controller_plugin|
         controller_plugin.run
       end
+      puts get_status
     end
 
     def stop_autoscaler
@@ -84,14 +89,6 @@ module Dynosaur
 
     def stop
       stop_autoscaler
-    end
-
-    # start the autoscaler in a new thread
-    def start_in_thread
-      thread = Thread.new {
-        start_autoscaler
-      }
-      return thread
     end
 
     # Get status hash (used in dynosaur-rails)

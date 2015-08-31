@@ -4,32 +4,6 @@
 require 'spec_helper'
 
 describe "scaler" do
-  it "should run the loop and modify settings" do
-
-    # The scaler checks every 0.1s
-    config = get_config_with_test_plugin
-
-    # The plugin may change every 0.2s
-    config["controller_plugins"][0]["interval"] = 0.2
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
-
-    puts "starting autoscaler"
-    thread = Dynosaur.start_in_thread
-
-    3.times { |i|
-      sleep 0.11  # sleep for one tick of the scaler
-      estimated = dyno_controller.current_estimate
-      current = dyno_controller.current
-      puts "#{i*0.11}s: Estimated = #{estimated}; Current = #{current}"
-      current.should be > 0
-      (current >= estimated).should be true
-    }
-    puts "Stopping autoscaler"
-    Dynosaur.stop_autoscaler
-    thread.join
-  end
-
 
   context "given multiple plugin configs" do
     before do
@@ -84,8 +58,8 @@ describe "scaler" do
     it "should report the error" do
       dyno_controller = Dynosaur.controller_plugins[0]
       rand = dyno_controller.input_plugins[0]
-      rand.should_receive(:retrieve).at_least(:once) { raise Exception.new "Oh Noes!" }
-      ErrorHandler.should_receive(:report).at_least(:once)
+      expect(rand).to receive(:retrieve).at_least(:once).and_raise(StandardError.new "Oh Noes!")
+      expect(Dynosaur::ErrorHandler).to receive(:handle).at_least(:once)
       dyno_controller.get_combined_estimate
     end
   end

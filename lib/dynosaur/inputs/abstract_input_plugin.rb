@@ -45,9 +45,9 @@ module Dynosaur
             @retrievals += 1
             @value = self.retrieve
             @last_retrieved_ts = now
-          rescue Exception => e
+          rescue StandardError => e
             puts "Error in #{self.name}#retrieve : #{e.inspect}"
-            ErrorHandler.report(e)
+            Dynosaur::ErrorHandler.handle(e)
             @value = -1
           end
           # Store in the ringbuffer
