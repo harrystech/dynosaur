@@ -38,7 +38,7 @@ describe Dynosaur do
         Timecop.freeze(5.minutes.from_now) do
           rand = Dynosaur.controller_plugins.first.input_plugins.first
           rand.instance_variable_set(:@last_retrieved_ts, 5.minutes.ago)
-          rand.stub(:retrieve).and_raise(Exception)
+          rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
           Dynosaur.run_loop
           @controller_status = Dynosaur.get_status['controller_status'].first
         end

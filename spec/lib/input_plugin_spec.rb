@@ -107,7 +107,7 @@ describe "Input Plugins" do
 
     context 'when stale' do
       it "returns stale" do
-        rand.stub(:retrieve).and_raise(Exception)
+        rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
         rand.instance_variable_set(:@last_retrieved_ts, 4.minutes.ago)
         rand.get_status.should be_a Hash
         rand.get_status['health'].should eq('STALE')
@@ -115,7 +115,7 @@ describe "Input Plugins" do
     end
     context 'when outage' do
       it "returns outage" do
-        rand.stub(:retrieve).and_raise(Exception)
+        rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
         rand.instance_variable_set(:@last_retrieved_ts, 6.minutes.ago)
         rand.get_status.should be_a Hash
         rand.get_status['health'].should eq('OUTAGE')

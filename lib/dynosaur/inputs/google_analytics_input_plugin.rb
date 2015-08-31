@@ -29,13 +29,13 @@ module Dynosaur
         @users_per_dyno = config["users_per_dyno"].to_i
 
         if @client_email.nil?
-          raise "You must supply client_email in the google analytics plugin config"
+          raise StandardError.new "You must supply client_email in the google analytics plugin config"
         end
         if @analytics_view_id.nil?
-          raise "You must supply analytics_view_id in the google analytics plugin config"
+          raise StandardError.new "You must supply analytics_view_id in the google analytics plugin config"
         end
         if @users_per_dyno.nil?
-          raise "You must supply users_per_dyno in the google analytics plugin config"
+          raise StandardError.new "You must supply users_per_dyno in the google analytics plugin config"
         end
 
         init_api

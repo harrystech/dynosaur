@@ -164,7 +164,7 @@ module Dynosaur
     def global_config(scaler_config)
       # Get the values from the global config
       if scaler_config.nil?
-        raise "Please include a 'scaler' block in the config"
+        raise StandardError.new "Please include a 'scaler' block in the config"
       end
       @dry_run = scaler_config.fetch("dry_run", @dry_run)
       # @stats = scaler_config.fetch("stats", @stats)
@@ -176,7 +176,7 @@ module Dynosaur
       @heroku_app_name = scaler_config.fetch("heroku_app_name", @heroku_app_name)
 
       if @heroku_api_key.nil? || @heroku_app_name.nil?
-        raise "You must specify your heroku API key and app name in the scaler section of config"
+        raise StandardError.new "You must specify your heroku API key and app name in the scaler section of config"
       end
 
     end
@@ -212,7 +212,7 @@ module Dynosaur
       }
       # Error if plugin type was not found
       if plugin.nil?
-        raise "Couldn't find plugin type #{config["type"]}"
+        raise StandardError.new "Couldn't find plugin type #{config["type"]}"
       end
       return plugin
     end
