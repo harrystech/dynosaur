@@ -48,6 +48,10 @@ def get_config_with_test_plugin(num_plugins=1)
     "max_resource" => 27,
   }]
 
+  config["stats_plugins"] = [{
+    'type' => 'Dynosaur::Stats::Console'
+  }]
+
   return config
 end
 
