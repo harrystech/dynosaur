@@ -1,5 +1,4 @@
 
-require 'heroku-api'
 require 'platform-api'
 
 module Dynosaur
@@ -17,7 +16,6 @@ module Dynosaur
       @retrievals = 0
 
       # TODO: We should migrate entirely to the platform API
-      @heroku = Heroku::API.new(:api_key => @api_key)
       @heroku_platform_api = PlatformAPI.connect_oauth(@api_key)
     end
 
