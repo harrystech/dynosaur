@@ -88,29 +88,31 @@ describe "Input Plugins" do
       config = get_config_with_test_plugin
       config["controller_plugins"][0]['input_plugins'][0]['interval'] = 30
       @scaler = Dynosaur::Autoscaler.new(config)
+      @dyno_controller = @scaler.controller_plugins[0]
+      allow(@dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
+      @rand = @dyno_controller.input_plugins[0]
+
       @scaler.run_loop
     end
-    let(:dyno_controller) { @scaler.controller_plugins[0] }
-    let(:rand) { dyno_controller.input_plugins[0] }
 
     context 'when ok' do
       it "returns ok" do
-        expect(rand.health).to eql 'OK'
+        expect(@rand.health).to eql 'OK'
       end
     end
 
     context 'when stale' do
       it "returns stale" do
-        rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
-        rand.instance_variable_set(:@last_retrieved_ts, 4.minutes.ago)
-        expect(rand.health).to eql 'STALE'
+        @rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
+        @rand.instance_variable_set(:@last_retrieved_ts, 4.minutes.ago)
+        expect(@rand.health).to eql 'STALE'
       end
     end
     context 'when outage' do
       it "returns outage" do
-        rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
-        rand.instance_variable_set(:@last_retrieved_ts, 6.minutes.ago)
-        expect(rand.health).to eql 'OUTAGE'
+        @rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
+        @rand.instance_variable_set(:@last_retrieved_ts, 6.minutes.ago)
+        expect(@rand.health).to eql 'OUTAGE'
       end
     end
   end

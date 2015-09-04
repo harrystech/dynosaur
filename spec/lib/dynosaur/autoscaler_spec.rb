@@ -47,6 +47,8 @@ describe Dynosaur::Autoscaler do
     end
 
     it 'should send stats' do
+      dyno_controller = @scaler.controller_plugins[0]
+      allow(dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
       handler = @scaler.instance_variable_get("@stats_handlers").first
       expect(handler).to receive(:report).with(@config["scaler"]["heroku_app_name"],
                                                [instance_of(Dynosaur::Inputs::RandomPlugin),
@@ -66,6 +68,7 @@ describe Dynosaur::Autoscaler do
 
     it "should report the error" do
       dyno_controller = @scaler.controller_plugins[0]
+      allow(dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
       rand = dyno_controller.input_plugins[0]
       expect(rand).to receive(:retrieve).at_least(:once).and_raise(StandardError.new "Oh Noes!")
       expect(Dynosaur::ErrorHandler).to receive(:handle).at_least(:once)

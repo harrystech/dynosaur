@@ -7,12 +7,14 @@ describe Dynosaur::HerokuDynoManager do
   end
   it "should only poll once a minute" do
     manager = Dynosaur::HerokuDynoManager.new(@api_key, @app_name, true, 0.1)
+    allow(manager).to receive(:retrieve).and_return(2)
     manager.set(2)
 
     current = manager.get_current_value
     current.should eql 2
 
     manager.set(3)
+    allow(manager).to receive(:retrieve).and_return(3)
     current = manager.get_current_value
     current.should eql 3
     manager.retrievals.should eql 1
