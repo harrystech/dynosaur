@@ -1,4 +1,3 @@
-require 'pry'
 
 module Dynosaur
   class HerokuAddonManager < HerokuManager
