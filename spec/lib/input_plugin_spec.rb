@@ -4,8 +4,8 @@ describe "Input Plugins" do
   it "should retrieve and cache value properly" do
     config = get_config_with_test_plugin
     config["controller_plugins"][0]['input_plugins'][0]['interval'] = 30
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
+    scaler = Dynosaur::Autoscaler.new(config)
+    dyno_controller = scaler.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
     rand.interval.should eql 30.0
 
@@ -23,8 +23,8 @@ describe "Input Plugins" do
   it "should retrieve and re-retrieve value properly" do
     config = get_config_with_test_plugin
     config["controller_plugins"][0]['input_plugins'][0]['interval'] = 0.1
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
+    scaler = Dynosaur::Autoscaler.new(config)
+    dyno_controller = scaler.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
     rand.interval.should eql 0.1
 
@@ -41,8 +41,8 @@ describe "Input Plugins" do
 
   it "should calculate the resources properly" do
     config = get_config_with_test_plugin
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
+    scaler = Dynosaur::Autoscaler.new(config)
+    dyno_controller = scaler.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
 
     val = rand.get_value()
@@ -55,8 +55,8 @@ describe "Input Plugins" do
     config = get_config_with_test_plugin
     config["controller_plugins"][0]['input_plugins'][0]['interval'] = 0.05
     config["controller_plugins"][0]["hysteresis_period"] = 0.05*5
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
+    scaler = Dynosaur::Autoscaler.new(config)
+    dyno_controller = scaler.controller_plugins[0]
     rand = dyno_controller.input_plugins[0]
     rand.interval.should eql 0.05
 
@@ -83,25 +83,19 @@ describe "Input Plugins" do
 
   end
 
-  it "should provide a config template" do
-    require 'dynosaur/inputs/random_plugin'
-    t = Dynosaur::Inputs::RandomPlugin.get_config_template
-    puts t
-  end
-
-  context 'status' do
+  context 'health' do
     before do
       config = get_config_with_test_plugin
       config["controller_plugins"][0]['input_plugins'][0]['interval'] = 30
-      Dynosaur.initialize(config)
+      @scaler = Dynosaur::Autoscaler.new(config)
+      @scaler.run_loop
     end
-    let(:dyno_controller) { Dynosaur.controller_plugins[0] }
+    let(:dyno_controller) { @scaler.controller_plugins[0] }
     let(:rand) { dyno_controller.input_plugins[0] }
 
     context 'when ok' do
       it "returns ok" do
-        rand.get_status.should be_a Hash
-        rand.get_status['health'].should eq('OK')
+        expect(rand.health).to eql 'OK'
       end
     end
 
@@ -109,16 +103,14 @@ describe "Input Plugins" do
       it "returns stale" do
         rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
         rand.instance_variable_set(:@last_retrieved_ts, 4.minutes.ago)
-        rand.get_status.should be_a Hash
-        rand.get_status['health'].should eq('STALE')
+        expect(rand.health).to eql 'STALE'
       end
     end
     context 'when outage' do
       it "returns outage" do
         rand.stub(:retrieve).and_raise(StandardError.new "Dummy Error")
         rand.instance_variable_set(:@last_retrieved_ts, 6.minutes.ago)
-        rand.get_status.should be_a Hash
-        rand.get_status['health'].should eq('OUTAGE')
+        expect(rand.health).to eql 'OUTAGE'
       end
     end
   end

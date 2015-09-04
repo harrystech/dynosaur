@@ -1,7 +1,6 @@
 
 require 'heroku-api'
 require 'platform-api'
-require 'dynosaur/error_handler'
 
 module Dynosaur
   class HerokuManager
@@ -19,7 +18,7 @@ module Dynosaur
 
       # TODO: We should migrate entirely to the platform API
       @heroku = Heroku::API.new(:api_key => @api_key)
-      @heroku_platform_api = heroku = PlatformAPI.connect_oauth(@api_key)
+      @heroku_platform_api = PlatformAPI.connect_oauth(@api_key)
     end
 
     def get_current_value
@@ -28,11 +27,7 @@ module Dynosaur
         begin
           @retrievals += 1
           # If we're dry-running, we'll pretend
-          if @dry_run
-            puts "DRY RUN: using last set dynos instead of hitting the API (#{@current_value})"
-          else
-            @current_value = self.retrieve
-          end
+          @current_value = self.retrieve
           @last_retrieved_ts = now
         rescue SystemExit, Interrupt # purposeful quit, ctrl-c, kill signal etc
           raise
@@ -49,6 +44,10 @@ module Dynosaur
     def ensure_value(value)
       @last_retrieved_ts = nil
       current = get_current_value
+      if @dry_run
+        puts "DRY RUN: would have changed #{current} to #{value}"
+        return
+      end
       if current != value
         set(value)
       else

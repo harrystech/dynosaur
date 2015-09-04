@@ -41,18 +41,23 @@ module Dynosaur
         now = Time.now
         # binding.pry
         if now > (@last_retrieved_ts + @interval)
-          begin
-            @retrievals += 1
-            @value = self.retrieve
-            @last_retrieved_ts = now
-          rescue StandardError => e
-            puts "Error in #{self.name}#retrieve : #{e.inspect}"
-            Dynosaur::ErrorHandler.handle(e)
-            @value = -1
-          end
-          # Store in the ringbuffer
-          @recent << @value
+          @value = do_retrievals
         end
+        return @value
+      end
+
+      def do_retrievals
+        begin
+          @retrievals += 1
+          @value = self.retrieve
+          @last_retrieved_ts = Time.now
+        rescue StandardError => e
+          puts "Error in #{self.name}#retrieve : #{e.inspect}"
+          Dynosaur::ErrorHandler.handle(e)
+          @value = -1
+        end
+        # Store in the ringbuffer
+        @recent << @value
         return @value
       end
 
@@ -64,10 +69,8 @@ module Dynosaur
         return @recent.min
       end
 
-      def get_status
+      def health
         now = Time.now
-        value = get_value
-        estimate = estimated_resources  # minor race condition, but only matters for logging
         health = "OK"
         if now - @last_retrieved_ts > @interval
           health = "STALE"
@@ -75,16 +78,8 @@ module Dynosaur
         if now - @last_retrieved_ts > DEFAULT_OUTAGE_PERIOD
           health = "OUTAGE"
         end
-        status = {
-          "estimate" => estimate,
-          "value" => value,
-          "unit" => @unit,
-          "last_retrieved" => @last_retrieved_ts,
-          "health" => health,
-        }
-        return status
+        health
       end
-
     end
   end
 end

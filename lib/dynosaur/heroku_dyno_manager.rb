@@ -2,6 +2,9 @@ module Dynosaur
   class HerokuDynoManager < HerokuManager
 
     def retrieve
+      if @dry_run
+        return @current_value
+      end
       @state = @heroku.get_app(@app_name).body
       return @state["dynos"]
     end

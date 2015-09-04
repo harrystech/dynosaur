@@ -34,13 +34,6 @@ module Dynosaur
         return suitable_plans(value).first
       end
 
-      def self.get_config_template
-        {
-          "max_percentage_threshold" => ["text"],
-          "papertrail_api_key" => ["text"],
-        }
-      end
-
       private
 
       def get_log_volume

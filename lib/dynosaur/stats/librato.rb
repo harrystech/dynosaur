@@ -20,7 +20,7 @@ module Dynosaur::Stats
     # combined_actual: what we actually set the resource level at taking into
     #                  account min/max, hysteresis etc.
     def report(name, plugins, combined_estimate, combined_actual)
-        ::Librato::Metrics.authenticate(@librato_email, @librato_api_key)
+        ::Librato::Metrics.authenticate(@api_email, @api_key)
 
         metrics = {}
         plugins.each do |plugin|

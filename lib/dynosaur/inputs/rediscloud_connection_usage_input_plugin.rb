@@ -24,14 +24,6 @@ module Dynosaur
         return suitable_plans(value).first
       end
 
-      def self.get_config_template
-        {
-          "max_percentage_threshold" => ["text"],
-          "component_id" => ["text"],
-          "new_relic_api_key" => ["text"],
-        }
-      end
-
       private
 
       def get_number_of_connections

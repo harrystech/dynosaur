@@ -27,13 +27,6 @@ and Dynosaur is configured with a minimum of 2 dynos. You can see that the
 estimated dynos rapidly tracks the upward slopes, but trails the downward slope
 by about 30s.
 
-## Companion Rails App
-
-This engine gem is primarily intended to be run as part of the companion rails
-app, ["Dynosaur Rails"](https://github.com/harrystech/dynosaur-rails), on a
-Heroku dyno. Dynosaur-Rails stores the engine config in a database and
-runs the decision engine loop in a background thread.
-
 ## Installation
 
 If you wish to run standalone, rather than with Dynosaur-Rails:
@@ -47,7 +40,7 @@ interface that can be configured from a JSON config file.
 
     $ dynosaur config.yaml
 
-An example config file is included.
+An example config file and a heroku Procfile is included.
 
 ## Global Autoscaler Configuration
 
@@ -140,18 +133,23 @@ In the Analytics admin console:
 
 ## Error Reporting
 
-We've added basic support for emailing unexpected errors via Sendgrid. This is
-configured via environment variables, so set these:
+We've added pluggable error handling, with two implementations available so far
 
-    SENDGRID_USERNAME
-	SENDGRID_PASSWORD
-and put your email address in
+### Console (Default)
 
-    DYNOSAUR_ADMIN_EMAIL
+- Logs errors to the console.
 
-(On Heroku, if you add the starter Sendgrid add-on to you app, the SENDGRID
-variables will be set automatically.)
+### Email via AWS Simple Email Service
 
+Configured like this in config.yaml
+
+    error_handlers:
+        -
+        type: Dynosaur::ErrorHandler::Ses
+        from: you@example.com
+        to: you@example.com
+        aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
 
 ## Contributing
 
@@ -174,11 +172,6 @@ plugin). For more fine-grained control, you can override `estimate_dynos()`
 instead.
 
 `initialize(config)`: You can pull any configuration you require from the config hash passed in.
-
-
-`get_config_template()` class method: used by Dynosaur-Rails to create the
-web configuration page, returns a hash of the config values your plugin
-requires.
 
 See the Google Analytics plugin or the toy Random plugin for an example.
 

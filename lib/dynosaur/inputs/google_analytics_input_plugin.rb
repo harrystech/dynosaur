@@ -42,16 +42,6 @@ module Dynosaur
 
       end
 
-      def self.get_config_template
-        t = {
-          "client_email" => ["text"],
-          "key" => ["textarea", "42", "27" ],
-          "analytics_view_id" => ["text"],
-          "users_per_dyno" => ["text"]
-        }
-        return t
-      end
-
       def retrieve
         return get_active_users
       end
@@ -69,7 +59,9 @@ module Dynosaur
         @client.authorization = nil
         if @keytext  # load key from string
           puts "Loading key from PEM text"
-          @key = OpenSSL::PKey::RSA.new(@keytext)
+          # When we load from YAML we replaced newlines with pipes, let's undo
+          # that
+          @key = OpenSSL::PKey::RSA.new(@keytext.gsub("|", "\n"))
         else  # load key from encrypted file
           puts "Loading key from file #{@keyfile}"
           @key = Google::APIClient::KeyUtils.load_from_pkcs12(@keyfile, @passphrase)

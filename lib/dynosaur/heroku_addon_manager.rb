@@ -1,3 +1,5 @@
+require 'pry'
+
 module Dynosaur
   class HerokuAddonManager < HerokuManager
 
@@ -29,8 +31,10 @@ module Dynosaur
 
     def current_addon
       if @current_addon.nil?
-        addons = @heroku_platform_api.addon.list(@app_name)
-        @current_addon = addons.find { |addon| addon['addon_service']['name'] == @addon_name }
+        addons = @heroku_platform_api.addon.list
+        @current_addon = addons.find { |addon|
+          addon['app']['name'] == @app_name && addon['addon_service']['name'] == @addon_name
+        }
       end
       return @current_addon
     end

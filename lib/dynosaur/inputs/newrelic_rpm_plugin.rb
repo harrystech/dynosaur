@@ -27,15 +27,6 @@ module Dynosaur
         init_api
       end
 
-      def self.get_config_template
-        t = {
-          "appid" => ["text"],
-          "key" => ["text"],
-          "rpm_per_dyno" => ["text"]
-        }
-        return t
-      end
-
       def retrieve
         return get_rpm
       end

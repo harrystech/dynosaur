@@ -32,10 +32,6 @@ module Dynosaur
         Dynosaur::Addons.plans_for_addon('papertrail')
       end
 
-      def self.get_config_template
-        {}
-      end
-
     end
   end # Inputs
 end # Dynosaur

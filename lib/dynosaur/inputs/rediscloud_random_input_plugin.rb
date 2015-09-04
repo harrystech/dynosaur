@@ -31,11 +31,6 @@ module Dynosaur
       def plans
         Dynosaur::Addons.plans_for_addon('rediscloud')
       end
-
-      def self.get_config_template
-        {}
-      end
-
     end
   end # Inputs
 end # Dynosaur

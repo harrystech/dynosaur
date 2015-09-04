@@ -4,8 +4,14 @@
 # loaded once.
 
 require 'pry'
-require 'dynosaur'
 require 'timecop'
+require 'faker'
+
+require 'dynosaur'
+require 'dynosaur/inputs/random_plugin'
+require 'dynosaur/inputs/sine_plugin'
+require 'dynosaur/inputs/papertrail_random_input_plugin'
+require 'dynosaur/inputs/rediscloud_random_input_plugin'
 
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
@@ -17,6 +23,13 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = 'random'
+
+  # Don't complain about the obsolete 'should' syntax
+  RSpec::Mocks.configuration.syntax = [:should, :expect]
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+
 end
 
 def get_config_with_test_plugin(num_plugins=1)

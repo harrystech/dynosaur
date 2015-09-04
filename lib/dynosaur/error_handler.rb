@@ -7,10 +7,7 @@ module Dynosaur
   module ErrorHandler
     class << self
       def initialize(config)
-        if config.nil?
-          config = [ { type: "Dynosaur::ErrorHandler::Console"} ]
-        end
-
+        return if config.nil?
         @@handlers = []
         config.each do |handler_config|
           type = handler_config.with_indifferent_access.delete "type"
@@ -20,9 +17,13 @@ module Dynosaur
       end
 
       def handle(exception)
-        @@handlers.each do |handler|
+        handlers.each do |handler|
           handler.handle(exception)
         end
+      end
+
+      def handlers
+        @@handlers ||= [Dynosaur::ErrorHandler::Console.new({})]
       end
     end
 
