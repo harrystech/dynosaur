@@ -11,7 +11,7 @@ module Dynosaur
       base_url = "https://api.newrelic.com"
       conn = Faraday.new(:url => base_url) do |faraday|
         faraday.request :url_encoded
-        faraday.response :logger
+        #faraday.response :logger
         faraday.adapter  Faraday.default_adapter
       end
     end
