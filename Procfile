@@ -1,1 +1,1 @@
-bundle exec bin/dynosaur config.yaml
+worker: bundle exec bin/dynosaur config.yaml
