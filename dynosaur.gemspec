@@ -35,4 +35,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'librato-metrics'
   spec.add_dependency 'aws-sdk-v1'  # for SES
   spec.add_dependency 'jwt', "~> 0.1.11"
+  spec.add_dependency 'faraday'
 end

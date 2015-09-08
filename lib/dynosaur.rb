@@ -23,6 +23,9 @@ require 'dynosaur/inputs/rediscloud_connection_usage_input_plugin'
 require 'dynosaur/inputs/rediscloud_memory_usage_input_plugin'
 
 require 'dynosaur/stats'
+
+require 'dynosaur/success/cronut'
+
 require 'dynosaur/autoscaler'
 require 'dynosaur/addons'
 

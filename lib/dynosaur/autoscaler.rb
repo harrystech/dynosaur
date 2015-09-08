@@ -43,6 +43,8 @@ module Dynosaur
       # Set up Statistics handler plugins
       @stats_handlers = config_stats_handlers config["stats_plugins"]
 
+      @success_handlers = config_success_handlers config["success_handlers"]
+
       # Load all controllers
 
       config_controller_plugins(config["controller_plugins"])
@@ -69,6 +71,13 @@ module Dynosaur
       @controller_plugins.each do |controller_plugin|
         controller_plugin.run
         log_stats(controller_plugin)
+      end
+      trigger_success_handlers
+    end
+
+    def trigger_success_handlers
+      @success_handlers.each do |handler|
+        handler.handle
       end
     end
 
@@ -118,6 +127,19 @@ module Dynosaur
       end
       handlers
     end
+
+    def config_success_handlers(success_config)
+      return [] if success_config.nil?
+      handlers = []
+      success_config.each do |config|
+        type = config["type"]
+        clazz = type.constantize
+        handler = clazz.new(config)
+        handlers << handler
+      end
+      handlers
+    end
+
 
     def config_one_plugin(config)
       subclasses = Dynosaur::Controllers::AbstractControllerPlugin.subclasses
