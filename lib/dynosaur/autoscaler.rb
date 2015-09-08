@@ -21,6 +21,7 @@ module Dynosaur
     attr_accessor :heroku_app_name, :controller_plugins, :debug, :dry_run
 
     def initialize(config)
+      STDOUT.sync = true
       puts "Dynosaur version #{Dynosaur::VERSION} initializing"
       if config.nil?
         raise ArgumentError.new "Must supply config hash"
