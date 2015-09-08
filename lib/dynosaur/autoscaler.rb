@@ -104,7 +104,7 @@ module Dynosaur
 
     def log_stats(controller)
       @stats_handlers.each do |handler|
-        handler.report(@heroku_app_name, controller.input_plugins, controller.current_estimate, controller.current)
+        handler.report(@heroku_app_name, controller.name, controller.input_plugins, controller.current_estimate, controller.current)
       end
     end
 

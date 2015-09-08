@@ -51,6 +51,7 @@ describe Dynosaur::Autoscaler do
       allow(dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
       handler = @scaler.instance_variable_get("@stats_handlers").first
       expect(handler).to receive(:report).with(@config["scaler"]["heroku_app_name"],
+                                               @config["controller_plugins"][0]["name"],
                                                [instance_of(Dynosaur::Inputs::RandomPlugin),
                                                 instance_of(Dynosaur::Inputs::RandomPlugin)],
                                                instance_of(Fixnum), instance_of(Fixnum)).and_call_original

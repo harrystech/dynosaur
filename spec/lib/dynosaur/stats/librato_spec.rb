@@ -9,6 +9,7 @@ describe Dynosaur::Stats::Librato do
   }
 
   let(:app_name) { Faker::Lorem.word }
+  let(:controller_name) { Faker::Lorem.word }
   before do
     @handler = Dynosaur::Stats::Librato.new(config)
   end
@@ -21,10 +22,10 @@ describe Dynosaur::Stats::Librato do
     combined_actual = 4
 
     expect(Librato::Metrics).to receive(:submit).with(hash_including({
-      "dynosaur.#{app_name}.rando.value" => plugins[0].get_value,
-      "dynosaur.#{app_name}.combined.actual" => combined_actual
+      "dynosaur.#{app_name}.#{controller_name}.rando.value" => plugins[0].get_value,
+      "dynosaur.#{app_name}.#{controller_name}.combined.actual" => combined_actual
     }))
-    @handler.report(app_name, plugins, combined_estimate, combined_actual)
+    @handler.report(app_name, controller_name, plugins, combined_estimate, combined_actual)
   end
 
 end

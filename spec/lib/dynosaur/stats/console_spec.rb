@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Dynosaur::Stats::Console do
   let(:app_name) { Faker::Lorem.word }
+  let(:controller_name) { Faker::Lorem.word }
   before do
     @handler = Dynosaur::Stats::Console.new({})
   end
@@ -17,7 +18,7 @@ describe Dynosaur::Stats::Console do
     #  "dynosaur.#{app_name}.rando.value" => plugins[0].get_value,
     #  "dynosaur.#{app_name}.combined.actual" => combined_actual
     #}))
-    @handler.report(app_name, plugins, combined_estimate, combined_actual)
+    @handler.report(app_name, controller_name, plugins, combined_estimate, combined_actual)
   end
 
 end

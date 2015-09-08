@@ -19,22 +19,25 @@ module Dynosaur::Stats
     #                    are combined
     # combined_actual: what we actually set the resource level at taking into
     #                  account min/max, hysteresis etc.
-    def report(name, plugins, combined_estimate, combined_actual)
+    def report(name, controller_name, plugins, combined_estimate, combined_actual)
         ::Librato::Metrics.authenticate(@api_email, @api_key)
 
         metrics = {}
         plugins.each do |plugin|
-          metrics["dynosaur.#{name}.#{plugin.name}.value"] = plugin.get_value
-          metrics["dynosaur.#{name}.#{plugin.name}.estimate"] = plugin.estimated_resources
+          metrics["dynosaur.#{name}.#{controller_name}.#{plugin.name}.value"] = plugin.get_value
+          metrics["dynosaur.#{name}.#{controller_name}.#{plugin.name}.estimate"] = plugin.estimated_resources
         end
-        metrics["dynosaur.#{name}.combined.actual"] = combined_actual
-        metrics["dynosaur.#{name}.combined.estimate"] = combined_estimate
+        metrics["dynosaur.#{name}.#{controller_name}.combined.actual"] = combined_actual
+        metrics["dynosaur.#{name}.#{controller_name}.combined.estimate"] = combined_estimate
+
+        # Filter non-numerical metrics
+        metrics.select! { |metric, value| value.class == Fixnum }
 
         ::Librato::Metrics.submit(metrics)
-    rescue Exception => e
+    rescue StandardError => e
       puts "Error sending librato metrics"
       puts e.message
     end
-  end
 
+  end
 end
