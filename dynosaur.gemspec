@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.name          = "dynosaur"
   spec.version       = Dynosaur::VERSION
   spec.authors       = ["Andy O'Neill", "Pierre Jambet", "Daniel Schwartz"]
-  spec.email         = ["aoneill@harrys.com",  'pjambet@harrys.com']
+  spec.email         = ["aoneill@harrys.com",  'pierre@harrys.com']
   spec.description   = %q{Heroku autoscaler based on plugabble analytics APIs}
   spec.summary       = %q{Heroku autoscaler}
   spec.homepage      = "http://github.com/harrystech/dynosaur"
