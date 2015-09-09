@@ -3,33 +3,7 @@
 
 require 'spec_helper'
 
-describe "scaler" do
-  it "should run the loop and modify settings" do
-
-    # The scaler checks every 0.1s
-    config = get_config_with_test_plugin
-
-    # The plugin may change every 0.2s
-    config["controller_plugins"][0]["interval"] = 0.2
-    Dynosaur.initialize(config)
-    dyno_controller = Dynosaur.controller_plugins[0]
-
-    puts "starting autoscaler"
-    thread = Dynosaur.start_in_thread
-
-    3.times { |i|
-      sleep 0.11  # sleep for one tick of the scaler
-      estimated = dyno_controller.current_estimate
-      current = dyno_controller.current
-      puts "#{i*0.11}s: Estimated = #{estimated}; Current = #{current}"
-      current.should be > 0
-      (current >= estimated).should be true
-    }
-    puts "Stopping autoscaler"
-    Dynosaur.stop_autoscaler
-    thread.join
-  end
-
+describe Dynosaur::Autoscaler do
 
   context "given multiple plugin configs" do
     before do
@@ -37,12 +11,12 @@ describe "scaler" do
 
       @config["controller_plugins"][0]['input_plugins'][0]["interval"] = 0.1
       @config["controller_plugins"][0]['input_plugins'][1]["interval"] = 0.1
-      Dynosaur.initialize(@config)
+      @scaler = Dynosaur::Autoscaler.new(@config)
     end
 
 
     it "should pick the maximum estimate" do
-      dyno_controller = Dynosaur.controller_plugins[0]
+      dyno_controller = @scaler.controller_plugins[0]
       dyno_controller.input_plugins[0].stub(:retrieve) { 10 }
       dyno_controller.input_plugins[1].stub(:retrieve) { 33 }
       combined, details = dyno_controller.get_combined_estimate
@@ -52,7 +26,7 @@ describe "scaler" do
 
     it "should obey max_resource" do
       # Check that we are constrained by max_resource
-      dyno_controller = Dynosaur.controller_plugins[0]
+      dyno_controller = @scaler.controller_plugins[0]
       dyno_controller.input_plugins[0].stub(:retrieve) { @config["controller_plugins"][0]["max_resource"]*4 }
       dyno_controller.input_plugins[1].stub(:retrieve) { 27 }
       combined, details = dyno_controller.get_combined_estimate
@@ -64,12 +38,24 @@ describe "scaler" do
     it "should obey min_resource" do
       # Check that we are constrained by min_resource
 
-      dyno_controller = Dynosaur.controller_plugins[0]
+      dyno_controller = @scaler.controller_plugins[0]
       dyno_controller.input_plugins[0].stub(:retrieve) { 0 }
       dyno_controller.input_plugins[1].stub(:retrieve) { 1 }
       combined, details = dyno_controller.get_combined_estimate
       puts "#{combined} - #{details}"
       combined.should eql @config["controller_plugins"][0]["min_resource"]
+    end
+
+    it 'should send stats' do
+      dyno_controller = @scaler.controller_plugins[0]
+      allow(dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
+      handler = @scaler.instance_variable_get("@stats_handlers").first
+      expect(handler).to receive(:report).with(@config["scaler"]["heroku_app_name"],
+                                               @config["controller_plugins"][0]["name"],
+                                               [instance_of(Dynosaur::Inputs::RandomPlugin),
+                                                instance_of(Dynosaur::Inputs::RandomPlugin)],
+                                               instance_of(Fixnum), instance_of(Fixnum)).and_call_original
+      @scaler.run_loop
     end
   end
 
@@ -78,15 +64,16 @@ describe "scaler" do
       @config = get_config_with_test_plugin(1)
 
       @config["controller_plugins"][0]["interval"] = 0.1
-      Dynosaur.initialize(@config)
+      @scaler = Dynosaur::Autoscaler.new(@config)
     end
 
     it "should report the error" do
-      dyno_controller = Dynosaur.controller_plugins[0]
+      dyno_controller = @scaler.controller_plugins[0]
+      allow(dyno_controller.heroku_manager).to receive(:retrieve).and_return(2)
       rand = dyno_controller.input_plugins[0]
-      rand.should_receive(:retrieve).at_least(:once) { raise Exception.new "Oh Noes!" }
-      ErrorHandler.should_receive(:report).at_least(:once)
-      dyno_controller.get_combined_estimate
+      expect(rand).to receive(:retrieve).at_least(:once).and_raise(StandardError.new "Oh Noes!")
+      expect(Dynosaur::ErrorHandler).to receive(:handle).at_least(:once)
+      @scaler.run_loop
     end
   end
 

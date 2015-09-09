@@ -29,27 +29,17 @@ module Dynosaur
         @users_per_dyno = config["users_per_dyno"].to_i
 
         if @client_email.nil?
-          raise "You must supply client_email in the google analytics plugin config"
+          raise StandardError.new "You must supply client_email in the google analytics plugin config"
         end
         if @analytics_view_id.nil?
-          raise "You must supply analytics_view_id in the google analytics plugin config"
+          raise StandardError.new "You must supply analytics_view_id in the google analytics plugin config"
         end
         if @users_per_dyno.nil?
-          raise "You must supply users_per_dyno in the google analytics plugin config"
+          raise StandardError.new "You must supply users_per_dyno in the google analytics plugin config"
         end
 
         init_api
 
-      end
-
-      def self.get_config_template
-        t = {
-          "client_email" => ["text"],
-          "key" => ["textarea", "42", "27" ],
-          "analytics_view_id" => ["text"],
-          "users_per_dyno" => ["text"]
-        }
-        return t
       end
 
       def retrieve
@@ -69,7 +59,9 @@ module Dynosaur
         @client.authorization = nil
         if @keytext  # load key from string
           puts "Loading key from PEM text"
-          @key = OpenSSL::PKey::RSA.new(@keytext)
+          # When we load from YAML we replaced newlines with pipes, let's undo
+          # that
+          @key = OpenSSL::PKey::RSA.new(@keytext.gsub("|", "\n"))
         else  # load key from encrypted file
           puts "Loading key from file #{@keyfile}"
           @key = Google::APIClient::KeyUtils.load_from_pkcs12(@keyfile, @passphrase)
@@ -121,13 +113,13 @@ module Dynosaur
           end
           active = r.data.rows[0][0].to_i
         rescue Exception => e
-          ErrorHandler.report(e)
+          Dynosaur::ErrorHandler.handle(e)
           puts "ERROR: failed to decipher result, forcing re-auth"
           puts e.inspect
           begin
             authorize(true)
           rescue Exception => e
-            ErrorHandler.report(e)
+            Dynosaur::ErrorHandler.handle(e)
           end
         end
         return active

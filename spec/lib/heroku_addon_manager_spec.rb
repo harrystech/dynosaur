@@ -13,7 +13,7 @@ describe Dynosaur::HerokuAddonManager do
 
   describe "#get_current_plan" do
     before do
-      allow_any_instance_of(PlatformAPI::Addon).to receive(:list).with(anything).and_return([{
+      allow_any_instance_of(PlatformAPI::Addon).to receive(:list).and_return([{
         "config_vars"=>[
           "PAPERTRAIL_API_TOKEN"
         ],
@@ -30,7 +30,7 @@ describe Dynosaur::HerokuAddonManager do
         },
         "app"=>{
           "id"=>"f00",
-          "name"=>"fake-app"
+          "name"=>"#{@app_name}"
         },
         "provider_id"=>"123",
         "updated_at"=>"2015-04-23T01:56:26Z",

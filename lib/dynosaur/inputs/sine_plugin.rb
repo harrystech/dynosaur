@@ -28,14 +28,6 @@ module Dynosaur
         puts "SINE: #{@recent} => #{value} : #{estimate}"
         return estimate
       end
-
-      def self.get_config_template
-        {
-          "period" => ["text"]
-        }
-      end
-
-
     end
   end
 end

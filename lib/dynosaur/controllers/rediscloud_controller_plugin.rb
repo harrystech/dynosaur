@@ -9,11 +9,11 @@ module Dynosaur
 
         @min_resource = Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == min_resource_name }
         if @min_resource.nil?
-          raise "Min resource not found with name #{min_resource_name}"
+          raise StandardError.new "Min resource not found with name #{min_resource_name}"
         end
         @max_resource = Dynosaur::Addons.plans_for_addon('rediscloud').find {|plan| plan['name'] == max_resource_name }
         if @max_resource.nil?
-          raise "Max resource not found with name #{max_resource_name}"
+          raise StandardError.new "Max resource not found with name #{max_resource_name}"
         end
         @stats_callback = nil # We can't log this on librato as we don't have numeric values
       end

@@ -2,25 +2,24 @@
 
 require 'rubygems'
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
-require "dynosaur"
+require 'dynosaur'
 require 'yaml'
+require 'erb'
 
 def load_config
   if ARGV.length != 1
     puts "Usage: #{$0} config.yaml"
     exit 2
   end
-  config = YAML.load_file(ARGV[0])
+  erb = File.read(ARGV[0])
+  config = YAML.load(ERB.new(erb).result)
   return config
 end
 
 
 config = load_config
 
+scaler = Dynosaur::Autoscaler.new(config)
 
-Dynosaur.initialize(config)
-
-
-Dynosaur.start_autoscaler
+scaler.start
 

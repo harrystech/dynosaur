@@ -7,6 +7,7 @@ module Dynosaur
 
       def initialize(config)
         super(config)
+        # TODO: refuse to run if api key not set
         @unit = "log volume (bytes)"
         @max_percentage_threshold = config.fetch('max_percentage_threshold', 90.0).to_f
 
@@ -32,13 +33,6 @@ module Dynosaur
 
       def value_to_resources(value)
         return suitable_plans(value).first
-      end
-
-      def self.get_config_template
-        {
-          "max_percentage_threshold" => ["text"],
-          "papertrail_api_key" => ["text"],
-        }
       end
 
       private

@@ -73,6 +73,8 @@ describe Dynosaur::Controllers::RediscloudControllerPlugin do
 
   describe '#run' do
     before do
+      mem_plugin = controller_plugin.input_plugins.first
+      expect(mem_plugin).to receive(:get_memory_usage).and_return(15)
       # This is what the API returns
       controller_plugin.heroku_manager.stub(:current_addon).and_return({
         "id"=>"foo",
