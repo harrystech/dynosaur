@@ -1,0 +1,1 @@
+worker: bundle exec dynosaur config.yaml

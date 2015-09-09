@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+ruby '2.2.2'
+
+gem 'dynosaur', '~> 0.6', github: 'harrystech/dynosaur', branch: 'headless'
+
+group :development do
+  gem 'pry'
+  gem 'pry-byebug'
+end

@@ -1,0 +1,89 @@
+scaler:
+    heroku_app_name: my-heroku-app
+    heroku_api_key: <%= ENV['HEROKU_API_KEY'] %>
+    #dry_run: true  # Will not actually connect to Heroku in this mode
+    interval: 5    # Wake up every 5s to check APIs
+    relaxation_period: 300   # Must be at below threshold for at least this long before dropping down a dyno
+
+stats_plugins:
+    -
+        type: Dynosaur::Stats::Librato
+        api_email: <%= ENV['LIBRATO_USER'] %>
+        api_key: <%= ENV['LIBRATO_TOKEN'] %>
+    -
+        type: Dynosaur::Stats::Console
+
+success_handlers:
+    -
+        type: Dynosaur::Success::Cronut
+        interval: 1800
+        cronut_token: ABCDEFG123
+        host: "https://your-cronut-app-here.herokuapp.com"
+        public_key: "<%= ENV.fetch('CRONUT_PUBLIC_KEY', '').gsub("\n", "|") %>"
+        api_token: <%= ENV['CRONUT_API_TOKEN'] %>
+
+error_handlers:
+    -
+        type: Dynosaur::ErrorHandler::Ses
+        from: dynosaur@yourdomain.com
+        to: you@yourdomain.com
+        aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
+        aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+    -
+        type: Dynosaur::ErrorHandler::Console
+
+controller_plugins:
+    -
+        name: dynos
+        type: Dynosaur::Controllers::DynosControllerPlugin
+        interval:
+        min_web_dynos: <%= ENV.fetch('MIN_WEB_DYNOS', 2) %>
+        max_web_dynos: <%= ENV.fetch('MAX_WEB_DYNOS', 15) %>
+        input_plugins:
+            -
+                name: ga
+                type: Dynosaur::Inputs::GoogleAnalyticsInputPlugin
+                interval: 10     # Do not go below 10s, the API limit will kick in!
+                client_email: <%= ENV['GOOGLE_CLIENT_EMAIL'] %>
+                analytics_view_id: 1234567
+                users_per_dyno: 210
+                # Swap out newlines for pipes because YAML can't handle
+                # unindented text.
+                key: <%= ENV.fetch('GA_PRIVATE_KEY', "").gsub("\n", "|") %>
+#            -
+#                name: newrelic
+#                type: Dynosaur::Inputs::NewRelicPlugin
+#                interval: 10
+#                key: <%= ENV["NEW_RELIC_API_KEY"] %>
+#                appid: 1234567
+#                rpm_per_dyno: 400
+#                hysteresis_period: 60
+    -
+        name: papertrail
+        type: Dynosaur::Controllers::PapertrailControllerPlugin
+        min_resource_name: papertrail:liatorp
+        max_resource_name: papertrail:galant
+        input_plugins:
+            -
+                name: papertrail_input
+                type: Dynosaur::Inputs::PapertrailInputPlugin
+                max_percentage_threshold: 95
+                papertrail_api_key: <%= ENV['PAPERTRAIL_API_KEY'] %>
+#    - name: redis
+#        type: Dynosaur::Controllers::RediscloudControllerPlugin
+#        min_resource_name: rediscloud:100
+#        max_resource_name: rediscloud:5000
+#        input_plugins:
+#            -
+#                name: redis_memory
+#                type: Dynosaur::Inputs::RediscloudMemoryUsageInputPlugin
+#                max_percentage_threshold: 90.0
+#                component_id: 1234567
+#                new_relic_api_key: <%= ENV['NEW_RELIC_API_KEY'] %>
+#            -
+#                name: redis connections
+#                type:  Dynosaur::Inputs::RediscloudConnectionUsageInputPlugin
+#                max_percentage_threshold: 90.0
+#                component_id: 1234567
+#                new_relic_api_key: <%= ENV['NEW_RELIC_API_KEY'] %>
+#

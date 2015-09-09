@@ -27,20 +27,16 @@ and Dynosaur is configured with a minimum of 2 dynos. You can see that the
 estimated dynos rapidly tracks the upward slopes, but trails the downward slope
 by about 30s.
 
-## Installation
+## Installation and Usage
 
-If you wish to run standalone, rather than with Dynosaur-Rails:
+See below about how to deploy to Heroku.
 
     $ gem install dynosaur
 
-## CLI Usage
-
-In addition to the Rails app, dynosaur comes with a command line
-interface that can be configured from a JSON config file.
+Create a YAML config file (see `config.sample.yaml` and info below) and run with:
 
     $ dynosaur config.yaml
 
-An example config file and a heroku Procfile is included.
 
 ## Global Autoscaler Configuration
 
@@ -49,45 +45,47 @@ autoscaler.
 
  - `heroku_app_name` (string): The name of the heroku app you want to autoscale
  - `heroku_api_key` (string): Heroku API key can be retrieved from [the Heroku account settings page.](https://dashboard.heroku.com/account)
- - `min_web_dynos` (int): The minimum number of web dynos we can automatically switch
-   to.
- - `max_web_dynos` (int): The maximum number of web dynos we can automatically switch
-   to
- - `dry_run` (boolean): If enabled, the scaler does not actually connect to Heroku, just
-        simulates the values it would choose. You can analyze the results from
-        `stats.txt` after running the command line client.
+ - `dry_run` (boolean): If enabled, the scaler does not actually change anything in Heroku, just
+        simulates the values it would choose.
  - `interval` (int): The autoscaler sleeps for this many seconds before checking for
         activity. Note that each plugin is configured with an API polling
         interval too, so this does not increase the frequency of API polling.
- - `librato_email` (string): Optional, set Librato account to track statistics.
- - `librato_api_key` (string): Optional, set Librato account to track
-        statistics.
 
-The CLI program will run indefinitely, with info output to stdout at intervals.
+Dynosaur will run indefinitely, with info output to stdout at intervals.
 
 If multiple plugins are configured, the scaler will use the maximum of all
 plugins results (i.e. if your New Relic plugin returns 3 dynos, and your GA plugin
-returns 5, you should scale to 5 dynos.)
+returns 5, you should scale to 5 dynos.
 
-### Statistics
+## Statistics
 
-Dynosaur can optionally use [Librato](http://librato.com) to collect some
-statistics on its operation. You can start with a free account, and enter the email address and API key in the config.
+Dynosaur can optionally use report statistics either to the command line or to
+[Librato](http://librato.com).
+
 The following stats are sent every *interval* seconds.
 
  - combined estimate of dynos required (includes min/max constraints)
+ - Actual number we are using (includes hysteresis)
 
 For each plugin we send
 
  - value (e.g. 'active users')
  - plugin dyno estimate
 
+
 ## Plugin Configuration
 
-All plugins have the following config values
+Dynosaur can scale different layers of your app, each layer is documented separately:
+
+- [Web dynos](doc/dyno_controller.md) (based on Google Analytics Live API and/or NewRelic RPM data)
+- [RedisCloud addon](doc/redis_controller.md) (based on number of connections and/or memory usage)
+- [Papertrail addon](doc/papertrail_controller.md) (based on amount of log data generated per month)
+
+### Common Plugin Configuration
+All input plugins have the following config values
 
 - `name` : unique identifier for the plugin instance. Freeform.
-- `type` : the name of the plugin class e.g. GoogleAnalyticsPlugin
+- `type` : the name of the plugin class e.g. `Dynosaur::Inputs::GoogleAnalyticsPlugin`
 - `interval` (default 60s) : how often to poll the respective API. (i.e. the retrieved value
   is cached for 'interval' seconds.)
 - `hysteresis_period` (default 300s) : the current estimate is based on the
@@ -95,43 +93,22 @@ All plugins have the following config values
   active users observed in the last 5 minutes is 127, we will base our estimate
   on 127 active users.
 
-### Google Analytics Configuration
+## Statistics Plugins
 
-- `key` : The non-encrypted PEM representation of the private key (see below)
-- `analytics_view_id` : The ID of the analytics view you want to monitor.
-- `client_email` : The client email from the developer console.
-- `users_per_dyno` : How many users can one dyno handle?
+### Librato Stats Reporter Configuration
 
-**NOTE: the analytics live API is in closed beta as of 2014-01-03.**
+You can sign up for a free account
 
-To retrieve the API credentials, log in to the [Cloud Console](https://cloud.google.com/console#/project) and perform the following steps:
+ - `type: Dynosaur::Stats::Librato`
+ - `api_email` (string): Email of Librato account user.
+ - `api_key` (string): API key.
 
-- APIs: enable analytics API
-- Credentials: generate an OAuth 'service account' with a certificate. Note the key passphrase ('notasecret' by
-  default)
-- Retrieve the generated email address and private key for the service account
+### Console Stats Reporter Configuration
 
-Convert the encrypted pkcs12 file to an unencrypted ASCII private key:
-
-    $ openssl pkcs12 -in foo.p12 -nodes -clcerts
-
-- Use the output between -----BEGIN RSA PRIVATE KEY and -----END RSA PRIVATE KEY
-  (including those lines) as the value for `key`
-
-In the Analytics admin console:
-
-- Under "User Management" in either property or view sections, add the service account you just created as an 
-	authorized user with 'Read and Analyze' permissions.
-- Retrieve the view ID under 'View->View Settings'
-
-### New Relic plugin
-
-- `key` : The New Relic API key: [Instructions](https://docs.newrelic.com/docs/features/api-key)
-- `appid` : The New Relic App ID (numeric ID, not the name)
-- `rpm_per_dyno` : How many requests per minute can one dyno handle?
+ - `type: Dynosaur::Stats::Console`
 
 
-## Error Reporting
+## Error Reporting Plugins
 
 We've added pluggable error handling, with two implementations available so far
 
@@ -150,6 +127,25 @@ Configured like this in config.yaml
         to: you@example.com
         aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
         aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+
+## Success Plugins
+
+We have included a pinger for our "dead man's switch" server [Cronut](https://github.com/harrystech/cronut). It will ping every minute or so, and we get an alert when Cronut hasn't received a ping for 10 minutes.
+
+## Deploying Dynosaur to Heroku
+
+At Harry's, we run Dynosaur as a Heroku app. Here's the steps to get it deployed:
+
+1. Create heroku app.
+2. Clone heroku git repository.
+3. Create a Gemfile and add dynosaur as a gem (see `doc/Gemfile`).
+4. Write your config file (see `doc/config.sample.yaml`)
+  1. We use environment variables for secrets, so set them locally and in Heroku
+5. Check that it works
+   1. `bundle install`
+   2. `bundle exec dynosaur config.yaml`
+5. Copy the Procfile (from `doc/Procfile`) to the root of your project.
+6. Commit it all and deploy to heroku
 
 ## Contributing
 
