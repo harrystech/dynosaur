@@ -88,11 +88,7 @@ module Dynosaur
         raise StandardError.new "Please include a 'scaler' block in the config"
       end
       @dry_run = scaler_config.fetch("dry_run", @dry_run)
-      # @stats = scaler_config.fetch("stats", @stats)
       @interval = scaler_config.fetch("interval", @interval)
-      @librato_api_key = scaler_config.fetch("librato_api_key", @librato_api_key)
-      @librato_email = scaler_config.fetch("librato_email", @librato_email)
-
       @heroku_api_key = scaler_config.fetch("heroku_api_key", @heroku_api_key)
       @heroku_app_name = scaler_config.fetch("heroku_app_name", @heroku_app_name)
 

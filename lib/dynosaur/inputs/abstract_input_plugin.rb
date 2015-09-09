@@ -71,14 +71,14 @@ module Dynosaur
 
       def health
         now = Time.now
-        health = "OK"
+        current_health = "OK"
         if now - @last_retrieved_ts > @interval
-          health = "STALE"
+          current_health = "STALE"
         end
         if now - @last_retrieved_ts > DEFAULT_OUTAGE_PERIOD
-          health = "OUTAGE"
+          current_health = "OUTAGE"
         end
-        health
+        current_health
       end
     end
   end
