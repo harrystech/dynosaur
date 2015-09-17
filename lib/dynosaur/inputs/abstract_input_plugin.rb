@@ -18,8 +18,8 @@ module Dynosaur
         @retrievals = 0
         @last_retrieved_ts = Time.at(0)
         @interval = config.fetch("interval", DEFAULT_INTERVAL).to_f
-        hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
-        @buffer_size = hysteresis_period / @interval  # num intervals to keep
+        @hysteresis_period = config.fetch("hysteresis_period", DEFAULT_HYSTERESIS_PERIOD).to_f
+        @buffer_size = @hysteresis_period / @interval  # num intervals to keep
         @recent = RingBuffer.new(@buffer_size)
       end
 

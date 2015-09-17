@@ -10,6 +10,8 @@ module Dynosaur
   module Inputs
     class NewRelicInputPlugin < AbstractInputPlugin
 
+      DEFAULT_RPM_PER_DYNO = 150
+
       # Load config from the config hash
       def initialize(config)
         super
@@ -17,7 +19,11 @@ module Dynosaur
         @unit = "RPM"
         @key = config["key"]
         @app_id = config["app_id"].to_s
-        @rpm_per_dyno = config["rpm_per_dyno"].to_i
+        @rpm_per_dyno = config.fetch("rpm_per_dyno", DEFAULT_RPM_PER_DYNO).to_i
+
+        if @hysteresis_period < 60
+          raise "The hysteresis_period must be longer than 60s for New Relic"
+        end
 
         if @key.blank?
           raise "You must supply API key in the new relic plugin config"
