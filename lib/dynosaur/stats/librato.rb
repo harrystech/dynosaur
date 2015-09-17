@@ -25,6 +25,7 @@ module Dynosaur::Stats
         metrics = {}
         plugins.each do |plugin|
           metrics["dynosaur.#{name}.#{controller_name}.#{plugin.name}.value"] = plugin.get_value
+          metrics["dynosaur.#{name}.#{controller_name}.#{plugin.name}.max"] = plugin.max_recent_values
           metrics["dynosaur.#{name}.#{controller_name}.#{plugin.name}.estimate"] = plugin.estimated_resources
         end
         metrics["dynosaur.#{name}.#{controller_name}.combined.actual"] = combined_actual

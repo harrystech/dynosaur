@@ -20,21 +20,28 @@ module Dynosaur
     # It seems like New Relic tends to return 0 if the time window is too small,
     # so default to 10 minutes
     #
-    def get_metric(metric_name, from: (Time.now.utc - (60 * 10)).iso8601, to: Time.now.utc.iso8601)
+    def get_metric(metric_name, from: (Time.now.utc - (60 * 10)).iso8601,
+                   to: Time.now.utc.iso8601, value_name: 'average_value',
+                   summarize: true)
       api_path = "/v2/components/#{@component_id}/metrics/data.json"
       response = faraday_connection.post(api_path) do |req|
         req.headers['X-Api-Key'] = @api_key
         req.body = {
           'names[]' => metric_name,
-          'values[]' => 'average_value',
-          'summarize' => true,
-          'from' => from,
-          'to' => to,
+          'values[]' => value_name,
+          'summarize' => summarize,
         }
+        if !from.nil?
+          req.body['from'] = from
+        end
+        if !to.nil?
+          req.body['to'] = to
+        end
       end
       if response.status == 200
         response_data = JSON.parse(response.body)
-        return response_data['metric_data']['metrics'][0]['timeslices'][0]['values']['average_value']
+        last_timeslice = response_data['metric_data']['metrics'][0]['timeslices'][-1]
+        return last_timeslice['values'][value_name]
       else
         puts "Error retrieving data from New Relic for metric #{metric_name}"
       end

@@ -16,6 +16,7 @@ module Dynosaur
       CACHED_API_FILE = "analytics-#{API_VERSION}.cache"
       KEYFILE = File.expand_path('~/.google/private.p12')
       PASSPHRASE = 'notasecret'
+      DEFAULT_USERS_PER_DYNO = 100
 
       # Load config from the config hash
       def initialize(config)
@@ -26,7 +27,7 @@ module Dynosaur
         @keytext = config.fetch("key", "")
         @client_email = config["client_email"]
         @analytics_view_id = config["analytics_view_id"]
-        @users_per_dyno = config["users_per_dyno"].to_i
+        @users_per_dyno = config.fetch("users_per_dyno", DEFAULT_USERS_PER_DYNO).to_i
 
         if @client_email.nil?
           raise StandardError.new "You must supply client_email in the google analytics plugin config"

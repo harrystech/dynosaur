@@ -15,6 +15,7 @@ module Dynosaur::Stats
         plugins.each do |plugin|
           puts "dynosaur.#{name}.#{controller_name}.#{plugin.name}.value: #{plugin.get_value}"
           puts "dynosaur.#{name}.#{controller_name}.#{plugin.name}.estimate: #{plugin.estimated_resources}"
+          puts "dynosaur.#{name}.#{controller_name}.#{plugin.name}.max: #{plugin.max_recent_values}"
         end
         puts "dynosaur.#{name}.#{controller_name}.combined.actual: #{combined_actual}"
         puts "dynosaur.#{name}.#{controller_name}.combined.estimate: #{combined_estimate}"
