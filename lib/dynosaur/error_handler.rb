@@ -19,7 +19,13 @@ module Dynosaur
 
       def handle(exception)
         handlers.each do |handler|
-          handler.handle(exception)
+          begin
+            handler.handle(exception)
+          rescue StandardError => e
+            puts "Error handler caused an error! Now we're in trouble"
+            puts e.message
+            puts e.backtrace.join("\n")
+          end
         end
       end
 
