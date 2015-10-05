@@ -2,6 +2,7 @@
 require 'dynosaur/error_handler/base_handler'
 require 'dynosaur/error_handler/console'
 require 'dynosaur/error_handler/ses'
+require 'dynosaur/error_handler/bugsnag'
 
 module Dynosaur
   module ErrorHandler
