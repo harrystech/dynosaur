@@ -24,8 +24,11 @@ success_handlers:
 
 error_handlers:
     -
+        type: Dynosaur::ErrorHandler::Bugsnag
+        api_key: <%= ENV['BUGSNAG_API_KEY'] %>
+    -
         type: Dynosaur::ErrorHandler::Ses
-        from: dynosaur@yourdomain.com
+        from: dynosaur@yourdomain.com   # Warning! This is really noisy
         to: you@yourdomain.com
         aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
         aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>

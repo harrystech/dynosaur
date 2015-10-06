@@ -110,11 +110,21 @@ You can sign up for a free account
 
 ## Error Reporting Plugins
 
-We've added pluggable error handling, with two implementations available so far
+We've added pluggable error handling, with three implementations available so far
 
 ### Console (Default)
 
-- Logs errors to the console.
+Logs errors to the console. No config.
+
+### Bugsnag
+
+Send exceptions to [Bugsnag](https://bugsnag.com). Configured like this in
+  config.yaml:
+
+    error_handlers:
+        -
+        type: Dynosaur::ErrorHandler::Bugsnag
+        api_key: <%= ENV['BUGSNAG_API_KEY'] %>
 
 ### Email via AWS Simple Email Service
 
@@ -127,6 +137,9 @@ Configured like this in config.yaml
         to: you@example.com
         aws_access_key_id: <%= ENV['AWS_ACCESS_KEY_ID'] %>
         aws_secret_access_key: <%= ENV['AWS_SECRET_ACCESS_KEY'] %>
+
+Warning: this has the tendency to send a lot of email due to minor blips in API
+reliability.
 
 ## Success Plugins
 
