@@ -44,6 +44,7 @@ module Dynosaur
         return last_timeslice['values'][value_name]
       else
         puts "Error retrieving data from New Relic for metric #{metric_name}"
+        return -1
       end
     end
   end
