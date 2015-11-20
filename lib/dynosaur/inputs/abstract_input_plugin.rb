@@ -57,7 +57,7 @@ module Dynosaur
           @value = -1
         end
         # Store in the ringbuffer
-        @recent << @value
+        @recent << @value if @value.is_a? Numeric
         return @value
       end
 
