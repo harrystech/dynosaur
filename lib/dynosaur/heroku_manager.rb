@@ -29,6 +29,8 @@ module Dynosaur
           @last_retrieved_ts = now
         rescue SystemExit, Interrupt # purposeful quit, ctrl-c, kill signal etc
           raise
+        rescue Excon::Error::ServiceUnavailable => e
+          raise Dynosaur::ConnectionError, "The Heroku Platform API is unavailable. Message: #{e.message}"
         rescue StandardError => e
           puts "Error in heroku retrieve : #{e.inspect}"
           Dynosaur::ErrorHandler.handle(e)

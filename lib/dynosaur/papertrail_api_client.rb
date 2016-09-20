@@ -21,10 +21,15 @@ module Dynosaur
     #
     def get_daily_usage
       api_path = "/api/v1/accounts"
-      response = faraday_connection.get(api_path) do |req|
-        req.headers['X-Papertrail-Token'] = @api_key
-        req.headers['Accept'] = 'application/json'
+      begin
+        response = faraday_connection.get(api_path) do |req|
+          req.headers['X-Papertrail-Token'] = @api_key
+          req.headers['Accept'] = 'application/json'
+        end
+      rescue Faraday::Error::ClientError => e
+        raise Dynosaur::ConnectionError, "The Papertrail API is unavailable. Message: #{e.message}"
       end
+
       response_data = JSON.parse(response.body)
       return response_data['log_data_transfer_used']
     end

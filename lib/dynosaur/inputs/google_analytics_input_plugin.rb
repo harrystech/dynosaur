@@ -113,6 +113,8 @@ module Dynosaur
             return 0
           end
           active = r.data.rows[0][0].to_i
+        rescue Google::APIClient::TransmissionError => e
+          raise Dynosaur::ConnectionError, "The Google API is unavailable. Message: #{e.message}"
         rescue Exception => e
           Dynosaur::ErrorHandler.handle(e)
           puts "ERROR: failed to decipher result, forcing re-auth"

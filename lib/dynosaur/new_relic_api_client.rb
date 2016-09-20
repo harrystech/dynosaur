@@ -24,20 +24,25 @@ module Dynosaur
                    to: Time.now.utc.iso8601, value_name: 'average_value',
                    summarize: true)
       api_path = "/v2/components/#{@component_id}/metrics/data.json"
-      response = faraday_connection.post(api_path) do |req|
-        req.headers['X-Api-Key'] = @api_key
-        req.body = {
-          'names[]' => metric_name,
-          'values[]' => value_name,
-          'summarize' => summarize,
-        }
-        if !from.nil?
-          req.body['from'] = from
+      begin
+        response = faraday_connection.post(api_path) do |req|
+          req.headers['X-Api-Key'] = @api_key
+          req.body = {
+            'names[]' => metric_name,
+            'values[]' => value_name,
+            'summarize' => summarize,
+          }
+          if !from.nil?
+            req.body['from'] = from
+          end
+          if !to.nil?
+            req.body['to'] = to
+          end
         end
-        if !to.nil?
-          req.body['to'] = to
-        end
+      rescue Faraday::Error::ClientError => e
+        raise Dynosaur::ConnectionError, "The New Relic API is unavailable. Message: #{e.message}"
       end
+
       if response.status == 200
         response_data = JSON.parse(response.body)
         last_timeslice = response_data['metric_data']['metrics'][0]['timeslices'][-1]

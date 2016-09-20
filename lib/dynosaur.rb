@@ -28,4 +28,4 @@ require 'dynosaur/success/cronut'
 
 require 'dynosaur/autoscaler'
 require 'dynosaur/addons'
-
+require 'dynosaur/error'
